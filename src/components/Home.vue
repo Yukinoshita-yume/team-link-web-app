@@ -1,12 +1,6 @@
 <template>
   <header>
-    <button 
-      id="logout-btn" 
-      v-if="hasLogin" 
-      @click="logout"
-    >
-      退出登录
-    </button>
+    <button id="logout-btn" v-if="hasLogin" @click="logout">退出登录</button>
     <div id="select-box">
       <input
         type="search"
@@ -17,8 +11,13 @@
       />
       <div id="serch-icon" @click="search"></div>
     </div>
+    <button id="ai-search-btn" @click="goToAiSearch">✦ AI 搜索</button>
     <div id="user" v-if="hasLogin" @click="goToUser()"></div>
-    <div id="user-login" v-if="!hasLogin&&!loading" @click="goToLogin()"></div>
+    <div
+      id="user-login"
+      v-if="!hasLogin && !loading"
+      @click="goToLogin()"
+    ></div>
   </header>
   <!-- <div id="empty-box"></div> -->
   <div id="items-box">
@@ -56,7 +55,7 @@
   </div>
   <div id="page-select-box">
     <div id="page-buttons-box">
-      <button @click="prevPage()" :disabled="page === 1"><</button>
+      <button @click="prevPage()" :disabled="page === 1"></button>
       <button
         v-for="item in pages"
         :key="item"
@@ -140,9 +139,9 @@ const goToDetail = (competitionId) => {
 
 const logout = () => {
   removeToken();
-  localStorage.removeItem('local-user');
+  localStorage.removeItem("local-user");
   hasLogin.value = false;
-  router.replace('/home'); // 跳转到登录页面
+  router.replace("/home"); // 跳转到登录页面
 };
 /*const itemUser= async (competitionId)=>{
     const params={
@@ -178,7 +177,7 @@ async function selectPage() {
     loading.value = true;
     const res = await selectPageApi(page.value, pageSize.value, content.value);
     console.log(res);
-    if(res.code === 0){
+    if (res.code === 0) {
       loading.value = false;
       total.value = res.data.total;
       competitions.value = res.data.rows;
@@ -202,26 +201,30 @@ async function userInfo() {
     const res = await userInfoApi();
     console.log(res);
     const user = {
-            userId: -1,
-            userName: "",
-            userGender: "",
-            userUniversity: "",
-            userMajor: "",
-            userInformation: ""
-        }
+      userId: -1,
+      userName: "",
+      userGender: "",
+      userUniversity: "",
+      userMajor: "",
+      userInformation: "",
+    };
     for (const key in user) {
       if (key in res.data) {
         user[key] = res.data[key];
       }
     }
-    console.log(user)
-    await store.dispatch('saveUserInfo', user);
+    console.log(user);
+    await store.dispatch("saveUserInfo", user);
     hasLogin.value = true;
   } catch (error) {
-    console.log("未登录",error);
-    localStorage.removeItem('local-user');
+    console.log("未登录", error);
+    localStorage.removeItem("local-user");
   }
 }
+
+const goToAiSearch = () => {
+  router.push("/search");
+};
 </script>
 
 <style scoped>
@@ -434,7 +437,7 @@ input[type="search"]::-webkit-search-cancel-button {
   cursor: not-allowed;
   opacity: 0.5;
 }
-.loadingPage{
+.loadingPage {
   display: flex;
   height: 600px;
   width: 100%;
@@ -468,14 +471,14 @@ input[type="search"]::-webkit-search-cancel-button {
   font-size: 18px;
   cursor: pointer;
   transition: all 0.3s ease; /* 平滑过渡效果 */
-  box-shadow: 0 2px 5px rgba(0,0,0,0.1); /* 轻微阴影 */
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1); /* 轻微阴影 */
 }
 
 /* 悬停效果 */
 #logout-btn:hover {
   transform: scale(1.05); /* 轻微放大 */
   background-color: #d4dbff; /* 悬停时颜色稍深 */
-  box-shadow: 0 4px 8px rgba(0,0,0,0.15); /* 阴影加深 */
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15); /* 阴影加深 */
 }
 
 /* 点击效果 */
@@ -487,5 +490,22 @@ input[type="search"]::-webkit-search-cancel-button {
 #select-box {
   left: 35%; /* 调整左边距为按钮留出空间 */
   width: 40%;
+}
+
+#ai-search-btn {
+  position: absolute;
+  right: 140px;
+  padding: 8px 18px;
+  background-color: rgba(177, 211, 203, 0.6);
+  color: #2a7a5e;
+  border: none;
+  border-radius: 20px;
+  font-size: 16px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+#ai-search-btn:hover {
+  background-color: rgba(177, 211, 203, 1);
+  transform: scale(1.05);
 }
 </style>

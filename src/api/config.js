@@ -1,4 +1,4 @@
-export const BASE_URL='http://127.0.0.1:8080';
+export const BASE_URL='http://150.158.136.64:8080';
 // 用户认证相关
 export const LOGIN_URL = '/user/login';
 export const REGISTER_URL = '/user/register';

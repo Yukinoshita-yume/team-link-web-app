@@ -223,8 +223,12 @@ async function userInfo() {
 }
 
 const goToAiSearch = () => {
-  router.push("/search");
-};
+  if (!hasLogin.value) {
+    router.push('/login')
+    return
+  }
+  router.push('/search')
+}
 </script>
 
 <style scoped>

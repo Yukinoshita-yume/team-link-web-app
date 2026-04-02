@@ -35,7 +35,7 @@ body {
     to top,
     rgba(228,213,243,1),
     rgba(255,240,221,1)
-  ); 
+  );
   /*紫色，淡黄版本 */
   height: 100%;
   width: 100vw;
@@ -48,7 +48,7 @@ body {
 }
 /* body ::before{
   background: rgba(255, 235, 150, 0.2);
-  pointer-events: none; 
+  pointer-events: none;
 } */
 #app{
   height: 100%;

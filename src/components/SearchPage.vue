@@ -203,7 +203,7 @@
 </template>
 
 <script setup>
-import { ref } from "vue";
+import { ref, onMounted } from "vue";
 import { useRouter } from "vue-router";
 import { aiSearchApi } from "@/api/api";
 
@@ -227,6 +227,9 @@ const search = async () => {
   try {
     const res = await aiSearchApi(query.value.trim());
     results.value = res.code === 0 ? res.data : [];
+    // 搜索完成后缓存结果和查询词
+    sessionStorage.setItem('lastSearchQuery', query.value)
+    sessionStorage.setItem('lastSearchResults', JSON.stringify(results.value))
   } catch (e) {
     results.value = [];
   } finally {
@@ -239,18 +242,38 @@ const quickSearch = (text) => {
   query.value = text;
   search();
 };
-const goToDetail = (id) =>
-  router.push({ path: "/project-detail", query: { id } });
-const goBack = () => router.back();
+
+const goToDetail = (id) => {
+  router.push({ path: '/project-detail', query: { id } })
+}
+
+onMounted(() => {
+  // 恢复上次搜索结果，不重新请求 API
+  const lastQuery = sessionStorage.getItem('lastSearchQuery')
+  const lastResults = sessionStorage.getItem('lastSearchResults')
+  if (lastQuery && lastResults) {
+    query.value = lastQuery
+    results.value = JSON.parse(lastResults)
+    searched.value = true
+  }
+})
+
+const goBack = () => {
+  // 返回时清除缓存
+  sessionStorage.removeItem('lastSearchQuery')
+  sessionStorage.removeItem('lastSearchResults')
+  router.back()
+}
+
 const allTags = (item) =>
-  [item.tag1, item.tag2, item.tag3, item.tag4, item.tag5].filter((t) =>
-    t?.trim(),
-  );
+    [item.tag1, item.tag2, item.tag3, item.tag4, item.tag5].filter((t) =>
+        t?.trim(),
+    );
 const formatDate = (d) => (d ? d.split("T")[0].replace(/-/g, "/") : "");
 const scoreBarClass = (s) =>
-  s >= 80 ? "bar-high" : s >= 60 ? "bar-mid" : "bar-low";
+    s >= 80 ? "bar-high" : s >= 60 ? "bar-mid" : "bar-low";
 const scoreBadgeClass = (s) =>
-  s >= 80 ? "badge-high" : s >= 60 ? "badge-mid" : "badge-low";
+    s >= 80 ? "badge-high" : s >= 60 ? "badge-mid" : "badge-low";
 </script>
 
 <style scoped>

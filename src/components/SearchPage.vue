@@ -4,33 +4,47 @@
     <div class="bg-orb orb2"></div>
     <div class="bg-orb orb3"></div>
 
-    <!-- Hero（未搜索） -->
     <transition name="hero-fade">
       <div id="hero" v-if="!searched && !loading">
-        <button class="back-btn" @click="goBack">← 返回</button>
+        <button class="nav-back" @click="goBack">
+          <svg
+              width="16"
+              height="16"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2.5"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+          >
+            <path d="M19 12H5M12 5l-7 7 7 7" />
+          </svg>
+          <span>返回</span>
+        </button>
+
         <div id="hero-content">
           <div id="ai-badge"><span class="badge-dot"></span>AI 智能匹配</div>
           <h1 id="hero-title">找到最适合你的<br />竞赛队伍</h1>
           <p id="hero-sub">用自然语言描述你的技能和需求，AI 为你精准推荐</p>
           <div id="hero-search-wrap">
             <input
-              type="text"
-              id="hero-input"
-              v-model="query"
-              placeholder="例：找需要 Java + Vue 的计算机设计赛"
-              @keydown.enter="search"
-              autocomplete="off"
+                type="text"
+                id="hero-input"
+                v-model="query"
+                placeholder="例：找需要 Java + Vue 的计算机设计赛"
+                @keydown.enter="search"
+                autocomplete="off"
             />
             <button id="hero-search-btn" @click="search" :disabled="loading">
               <svg
-                width="20"
-                height="20"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="2.5"
-                stroke-linecap="round"
-                stroke-linejoin="round"
+                  width="20"
+                  height="20"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2.5"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
               >
                 <circle cx="11" cy="11" r="8" />
                 <path d="m21 21-4.35-4.35" />
@@ -38,13 +52,13 @@
             </button>
           </div>
           <div id="quick-tags">
-            <span
-              class="quick-tag"
-              v-for="tag in quickTags"
-              :key="tag"
-              @click="quickSearch(tag)"
-              >{{ tag }}</span
-            >
+        <span
+            class="quick-tag"
+            v-for="tag in quickTags"
+            :key="tag"
+            @click="quickSearch(tag)"
+        >{{ tag }}</span
+        >
           </div>
         </div>
       </div>
@@ -53,26 +67,41 @@
     <!-- 顶部 bar（搜索后） -->
     <transition name="bar-slide">
       <div id="top-bar" v-if="searched || loading">
-        <button class="back-btn bar-back" @click="goBack">← 返回</button>
-        <div id="bar-search-wrap">
-          <input
-            type="text"
-            id="bar-input"
-            v-model="query"
-            placeholder="重新搜索..."
-            @keydown.enter="search"
-            autocomplete="off"
-          />
-          <button id="bar-search-btn" @click="search" :disabled="loading">
-            <svg
-              width="18"
-              height="18"
+        <button class="nav-back bar-back" @click="goBack">
+          <svg
+              width="16"
+              height="16"
               viewBox="0 0 24 24"
               fill="none"
               stroke="currentColor"
               stroke-width="2.5"
               stroke-linecap="round"
               stroke-linejoin="round"
+          >
+            <path d="M19 12H5M12 5l-7 7 7 7" />
+          </svg>
+          <span>返回</span>
+        </button>
+
+        <div id="bar-search-wrap">
+          <input
+              type="text"
+              id="bar-input"
+              v-model="query"
+              placeholder="重新搜索..."
+              @keydown.enter="search"
+              autocomplete="off"
+          />
+          <button id="bar-search-btn" @click="search" :disabled="loading">
+            <svg
+                width="18"
+                height="18"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2.5"
+                stroke-linecap="round"
+                stroke-linejoin="round"
             >
               <circle cx="11" cy="11" r="8" />
               <path d="m21 21-4.35-4.35" />
@@ -852,6 +881,142 @@ const scoreBadgeClass = (s) =>
   #top-bar {
     padding: 12px 16px;
     gap: 10px;
+  }
+}
+
+/* 确保按钮在 Hero 视图中出现在左上角 */
+#hero > .nav-back {
+  position: absolute;
+  top: 24px;
+  left: 24px;
+  /* 基础样式建议如下 */
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 7px 16px;
+  background: rgba(255, 255, 255, 0.7);
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  border-radius: 20px;
+  font-size: 14px;
+  color: #666;
+  cursor: pointer;
+  backdrop-filter: blur(8px);
+  transition: all 0.2s;
+  z-index: 10;
+}
+
+#hero > .nav-back:hover {
+  background: rgba(255, 255, 255, 0.95);
+  color: #333;
+  transform: translateY(-1px);
+}
+
+/* 1. 顶部 Bar 容器 */
+#top-bar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 100;
+  display: flex;
+  align-items: center; /* 垂直居中 */
+  justify-content: center; /* 内容整体居中 */
+  gap: 16px; /* 按钮和搜索框之间的间距 */
+  padding: 15px 20px;
+  background: rgba(255, 255, 255, 0.82);
+  backdrop-filter: blur(16px);
+  border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+  box-shadow: 0 2px 20px rgba(0, 0, 0, 0.04);
+}
+
+/* 2. 统一的返回按钮基础样式 (nav-back) */
+.nav-back {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 7px 15px;
+  background: rgba(255, 255, 255, 0.8);
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  border-radius: 20px;
+  font-size: 14px;
+  color: #555;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+  flex-shrink: 0; /* 防止被搜索框挤压变形 */
+}
+
+.nav-back:hover {
+  background: white;
+  color: #333;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+  transform: translateY(-1px);
+}
+
+/* 3. 针对 Top Bar 内部返回按钮的特定微调 */
+.bar-back {
+  /* 如果顶部条高度较窄，可以稍微收紧一点 padding */
+  padding: 6px 12px;
+  background: rgba(0, 0, 0, 0.03); /* 让它和背景有一点区分 */
+}
+
+/* 4. 搜索框包裹层微调 */
+#bar-search-wrap {
+  flex: 1; /* 占据剩余空间 */
+  max-width: 600px; /* 限制搜索框最大宽度 */
+  display: flex;
+  align-items: center;
+  background: rgba(255, 255, 255, 0.9);
+  border: 1.5px solid rgba(139, 92, 246, 0.15); /* 使用你常用的紫色调 */
+  border-radius: 40px;
+  overflow: hidden;
+  transition: all 0.2s;
+}
+
+#bar-search-wrap:focus-within {
+  border-color: rgba(139, 92, 246, 0.4);
+  box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.08);
+}
+
+#bar-input {
+  flex: 1;
+  border: none;
+  background: transparent;
+  padding: 10px 16px;
+  font-size: 14px;
+  outline: none;
+  color: #333;
+}
+
+#bar-search-btn {
+  width: 36px;
+  height: 36px;
+  background: linear-gradient(135deg, #8b5cf6, #6d28d9);
+  border: none;
+  border-radius: 50%;
+  margin: 7px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+/* 5. 移动端响应式优化 */
+@media (max-width: 500px) {
+  #top-bar {
+    padding: 10px 12px;
+    gap: 8px;
+  }
+
+  .bar-back span {
+    display: none; /* 手机端只显示返回图标，节省空间 */
+  }
+
+  .bar-back {
+    padding: 8px; /* 变成圆形外观 */
+    border-radius: 50%;
   }
 }
 </style>

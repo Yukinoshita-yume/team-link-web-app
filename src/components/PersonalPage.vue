@@ -1,622 +1,222 @@
 <template>
-  <div class="personal-page">
-    <div class="action-buttons">
-      <button class="save-button" @click="saveUserInfo">
-        <svg class="save-icon" viewBox="0 0 24 24">
-          <path
-            fill="currentColor"
-            d="M15,9H5V5H15M12,19A3,3 0 0,1 9,16A3,3 0 0,1 12,13A3,3 0 0,1 15,16A3,3 0 0,1 12,19M17,3H5C3.89,3 3,3.9 3,5V19A2,2 0 0,0 5,21H19A2,2 0 0,0 21,19V7L17,3Z"
-          />
-        </svg>
-        保存
-      </button>
-      <button class="logout-button" @click="handleLogout()">
-        <svg class="logout-icon" viewBox="0 0 24 24">
-          <path
-            fill="currentColor"
-            d="M16,17V14H9V10H16V7L21,12L16,17M14,2A2,2 0 0,1 16,4V6H14V4H5V20H14V18H16V20A2,2 0 0,1 14,22H5A2,2 0 0,1 3,20V4A2,2 0 0,1 5,2H14Z"
-          />
-        </svg>
-        退出
-      </button>
-    </div>
+  <div class="page">
+    <div class="blob blob1"></div>
+    <div class="blob blob2"></div>
 
-    <div id="user-img"></div>
+    <!-- 顶部导航 -->
+    <nav class="nav">
+      <div class="nav-title">个人主页</div>
+      <div class="nav-actions">
+        <button class="btn-save" @click="saveUserInfo" :disabled="saving">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+          {{ saving ? '保存中…' : '保存' }}
+        </button>
+        <button class="btn-logout" @click="handleLogout">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+          退出
+        </button>
+      </div>
+    </nav>
 
-    <main class="content-container">
-      <!-- 个人信息板块 -->
-      <div class="profile-card">
-        <h2 class="card-title">
-          <svg class="user-icon" viewBox="0 0 24 24">
-            <path
-              fill="currentColor"
-              d="M12 4a4 4 0 014 4 4 4 0 01-4 4 4 4 0 01-4-4 4 4 0 014-4m0 10c4.42 0 8 1.79 8 4v2H4v-2c0-2.21 3.58-4 8-4z"
-            />
-          </svg>
-          个人信息
-        </h2>
+    <div class="content">
+      <!-- 头像区 -->
+      <div class="avatar-section">
+        <div class="avatar"></div>
+        <div class="avatar-name">{{ user.userName || '未设置用户名' }}</div>
+        <div class="avatar-sub">{{ user.userEmail }}</div>
+      </div>
 
-        <!-- 用户名 -->
-        <div class="username-section">
-          <label class="section-label">用户名</label>
-          <input type="text" v-model="user.userName" class="styled-input" />
+      <!-- 个人信息卡片 -->
+      <div class="card">
+        <div class="card-title"><div class="title-bar"></div>个人信息</div>
+        <div class="form-grid">
+          <div class="field">
+            <label>用户名</label>
+            <input type="text" v-model="user.userName" placeholder="请输入用户名"/>
+          </div>
+          <div class="field">
+            <label>性别</label>
+            <select v-model="user.userGender">
+              <option value="male">男</option>
+              <option value="female">女</option>
+              <option value="unknown">其他</option>
+            </select>
+          </div>
+          <div class="field">
+            <label>学校</label>
+            <input type="text" v-model="user.userUniversity" placeholder="请输入学校"/>
+          </div>
+          <div class="field">
+            <label>专业</label>
+            <input type="text" v-model="user.userMajor" placeholder="请输入专业"/>
+          </div>
+        </div>
+        <div class="field full">
+          <label>个人简介</label>
+          <textarea v-model="user.userInformation" placeholder="介绍一下你自己…"></textarea>
+        </div>
+      </div>
+
+      <!-- 竞赛信息 -->
+      <div class="competitions-grid">
+        <!-- 我报名的 -->
+        <div class="card">
+          <div class="card-title">
+            <div class="title-bar bar-amber"></div>
+            我报名的项目
+            <button class="msg-btn" @click="goToMessagePage">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+              消息
+            </button>
+          </div>
+          <div class="project-list">
+            <div class="project-item" v-for="p in appliedProjects" :key="p.competitionId" @click="toCompetitionDetail(p.competitionId)">
+              <span class="project-name">{{ p.title }}</span>
+              <span class="project-action">查看 ›</span>
+            </div>
+            <div class="empty-list" v-if="appliedProjects.length === 0">暂无报名项目</div>
+          </div>
         </div>
 
-        <!-- 基本信息 -->
-        <div class="basic-info-grid">
-          <div class="info-item">
-            <label>性别</label>
-            <div class="select-wrapper">
-              <select v-model="user.userGender" class="styled-select">
-                <option value="male">男</option>
-                <option value="female">女</option>
-                <option value="unknown">其他</option>
-              </select>
-              <div class="select-arrow"></div>
+        <!-- 我创办的 -->
+        <div class="card">
+          <div class="card-title">
+            <div class="title-bar"></div>
+            我创办的项目
+            <div class="title-actions">
+              <button class="msg-btn btn-green" @click="handleCreateProject">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                创办
+              </button>
+              <button class="msg-btn" @click="goToMessagePage2">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+                消息
+              </button>
             </div>
           </div>
-
-          <div class="info-item">
-            <label>学校</label>
-            <input
-              type="text"
-              v-model="user.userUniversity"
-              placeholder="请输入学校"
-              class="styled-input"
-            />
-          </div>
-
-          <div class="info-item">
-            <label>专业</label>
-            <input
-              type="text"
-              v-model="user.userMajor"
-              placeholder="请输入专业"
-              class="styled-input"
-            />
-          </div>
-        </div>
-
-        <!-- 个人简介 -->
-        <div class="bio-section">
-          <label class="section-label">个人简介</label>
-          <textarea
-            v-model="user.userInformation"
-            placeholder="介绍一下你自己..."
-            class="styled-textarea"
-          ></textarea>
-        </div>
-      </div>
-
-      <!-- 竞赛信息板块 -->
-      <div class="competition-card">
-        <h2 class="card-title">
-          <svg class="trophy-icon" viewBox="0 0 24 24">
-            <path
-              fill="currentColor"
-              d="M18 2c-.9 0-2 1-2 2H8c0-1-1.1-2-2-2H2v9c0 1 1 2 2 2h2.2c.4 2 1.7 3.7 4.8 4v2.1c-2.2.2-3 2.3-3 3.9h8c0-1.6-.8-3.7-3-3.9V17c3.1-.3 4.4-2 4.8-4H20c1 0 2-1 2-2V2h-4M6 11H4V4h2v7m14 0h-2V4h2v7z"
-            />
-          </svg>
-          竞赛信息
-        </h2>
-
-        <div class="projects-grid">
-          <!-- 已报项目 -->
-          <div class="project-category">
-            <h3 class="project-title">
-              <span class="status-badge applied"></span>
-              我报名的项目
-              <div class="project-status message" @click="goToMessagePage">
-                消息
-              </div>
-            </h3>
-            <ul class="project-list">
-              <li
-                v-for="project in appliedProjects"
-                :key="project.id"
-                class="project-item"
-              >
-                <div class="project-name">{{ project.title }}</div>
-                <div
-                  class="project-status"
-                  @click="toCompetitionDetail(project.competitionId)"
-                >
-                  查看
-                </div>
-              </li>
-              <li v-if="appliedProjects.length === 0" class="empty-project">
-                暂无已报项目
-              </li>
-            </ul>
-          </div>
-
-          <!-- 我创办的项目 -->
-          <div class="project-category">
-            <h3 class="project-title">
-              <span class="status-badge created"></span>
-              我创办的项目
-              <div
-                class="project-status create-btn"
-                @click="handleCreateProject"
-              >
-                创办
-              </div>
-              <div class="project-status message" @click="goToMessagePage2">
-                消息
-              </div>
-            </h3>
-            <ul class="project-list">
-              <li
-                v-for="project in createdProjects"
-                :key="project.id"
-                class="project-item"
-              >
-                <div class="project-name">{{ project.title }}</div>
-                <div
-                  class="project-status"
-                  @click="toCompetitionDetail(project.competitionId)"
-                >
-                  管理
-                </div>
-              </li>
-              <li v-if="createdProjects.length === 0" class="empty-project">
-                暂无创办项目
-              </li>
-            </ul>
+          <div class="project-list">
+            <div class="project-item" v-for="p in createdProjects" :key="p.competitionId" @click="toCompetitionDetail(p.competitionId)">
+              <span class="project-name">{{ p.title }}</span>
+              <span class="project-action">管理 ›</span>
+            </div>
+            <div class="empty-list" v-if="createdProjects.length === 0">暂无创办项目</div>
           </div>
         </div>
       </div>
-    </main>
+    </div>
+
+    <!-- 保存成功 Toast -->
+    <transition name="toast">
+      <div class="toast" v-if="saveToast">
+        <span>✅</span> 保存成功
+      </div>
+    </transition>
   </div>
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from "vue";
-import { useRouter } from "vue-router";
-import {
-  updateApi,
-  allAppliedCompetitionsApi,
-  allCreatedCompetitionsApi,
-} from "@/api/api";
-import { setId } from "@/utils/auth";
-import router from "@/router";
-import { useStore } from "vuex";
+import { ref, computed, onMounted } from 'vue'
+import { useStore } from 'vuex'
+import { updateApi, allAppliedCompetitionsApi, allCreatedCompetitionsApi } from '@/api/api'
+import router from '@/router'
 
-const goToMessagePage = () => {
-  router.push("/message-page");
-};
+const store = useStore()
+const localUser = computed(() => store.state.user)
+const user = ref({ ...localUser.value })
+const saving = ref(false)
+const saveToast = ref(false)
+const appliedProjects = ref([])
+const createdProjects = ref([])
 
-// 跳转到MessagePage2
-const goToMessagePage2 = () => {
-  router.push("/message-page2");
-};
-
-const store = useStore();
-// 用户数据
-const localUser = computed(() => store.state.user);
-const user = ref(localUser.value);
-
-// 状态管理
-const saveStatus = ref("");
-
-// 项目数据
-const appliedProjects = ref([]);
-
-const createdProjects = ref([]);
-
-// 保存用户信息
-const saveUserInfo = () => {
-  saveStatus.value = "保存中...";
-  update();
-  store.dispatch("saveUserInfo", user);
-  setTimeout(() => (saveStatus.value = ""), 2000);
-};
-
-// 退出按钮逻辑
-const handleLogout = () => {
-  router.push('/home');
-};
-//创办项目
-const handleCreateProject = () => {
-  router.push("/create-project");
-};
-//查询竞赛详情按钮逻辑
-const toCompetitionDetail = (competitionId) => {
-  router.push({
-    path: "/project-detail",
-    query: { id: competitionId }, // 使用query传递参数
-  });
-};
-//更新api调用函数
-async function update() {
+const saveUserInfo = async () => {
+  saving.value = true
   try {
-    const res = await updateApi(user.value);
-    console.log(res);
-    if (res.code == 0) {
-      saveStatus.value = "保存成功!";
-    } else {
-      saveStatus.value = "保存失败";
-    }
-  } catch (error) {
-    console.error("update error", error);
-  }
+    const res = await updateApi(user.value)
+    if (res.code === 0) { store.dispatch('saveUserInfo', user.value); saveToast.value = true; setTimeout(() => saveToast.value = false, 2500) }
+  } catch (e) { console.error(e) }
+  finally { saving.value = false }
 }
-//获取参加的比赛
+const handleLogout = () => router.push('/home')
+const handleCreateProject = () => router.push('/create-project')
+const toCompetitionDetail = (id) => router.push({ path: '/project-detail', query: { id } })
+const goToMessagePage = () => router.push('/message-page')
+const goToMessagePage2 = () => router.push('/message-page2')
+
 async function allAppliedCompetitions() {
-  try {
-    const res = await allAppliedCompetitionsApi({
-      userId: localUser.value.userId,
-    });
-    console.log(res);
-    if (res.code === 0) {
-      appliedProjects.value = res.data;
-      console.log(appliedProjects.value);
-    }
-  } catch (error) {
-    console.error("获取参与竞赛失败", error);
-  }
+  try { const res = await allAppliedCompetitionsApi({ userId: localUser.value.userId }); if (res.code === 0) appliedProjects.value = res.data } catch (e) { console.error(e) }
 }
-//获取创建的比赛
 async function allCreatedCompetitions() {
-  try {
-    const res = await allCreatedCompetitionsApi({
-      userId: localUser.value.userId,
-    });
-    console.log(res);
-    if (res.code === 0) {
-      createdProjects.value = res.data;
-      console.log(createdProjects.value);
-    }
-  } catch (error) {
-    console.error("获取创建的竞赛失败", error);
-  }
+  try { const res = await allCreatedCompetitionsApi({ userId: localUser.value.userId }); if (res.code === 0) createdProjects.value = res.data } catch (e) { console.error(e) }
 }
 onMounted(() => {
-  if (localUser.value.userId === -1) {
-    router.replace("/login");
-  }
-  allAppliedCompetitions();
-  allCreatedCompetitions();
-});
+  if (localUser.value.userId === -1) { router.replace('/login'); return }
+  allAppliedCompetitions(); allCreatedCompetitions()
+})
 </script>
 
 <style scoped>
-/* 基础样式 */
-:root {
-  --primary-color: #4361ee;
-  --secondary-color: #3f37c9;
-  --success-color: #4cc9f0;
-  --danger-color: #f72585;
-  --warning-color: #f8961e;
-  --dark-color: #212529;
-  --gray-color: #6c757d;
-  --border-radius: 12px;
-  --box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
-  --transition: all 0.3s ease;
+* { box-sizing: border-box; margin: 0; padding: 0; }
+.page { min-height: 100vh; background: linear-gradient(135deg, #f8f4ff 0%, #f0f4ff 60%, #fdf4ff 100%); position: relative; overflow-x: hidden; font-family: -apple-system, BlinkMacSystemFont, 'PingFang SC', sans-serif; }
+.blob { position: fixed; border-radius: 50%; filter: blur(80px); pointer-events: none; z-index: 0; }
+.blob1 { width: 500px; height: 500px; background: rgba(167,139,250,0.15); top: -120px; right: -80px; }
+.blob2 { width: 400px; height: 400px; background: rgba(196,181,253,0.12); bottom: 0; left: -60px; }
+
+.nav { position: sticky; top: 0; z-index: 50; display: flex; align-items: center; justify-content: space-between; padding: 14px 24px; background: rgba(255,255,255,0.85); backdrop-filter: blur(16px); border-bottom: 1px solid rgba(0,0,0,0.05); }
+.nav-title { font-size: 22px; font-weight: 800; color: #1a1028; }
+.nav-actions { display: flex; gap: 10px; }
+.btn-save, .btn-logout { display: flex; align-items: center; gap: 6px; padding: 8px 16px; border: none; border-radius: 20px; font-size: 13px; font-weight: 600; cursor: pointer; transition: all 0.2s; }
+.btn-save { background: linear-gradient(135deg, #8b5cf6, #6d28d9); color: white; box-shadow: 0 3px 12px rgba(109,40,217,0.22); }
+.btn-save:hover:not(:disabled) { transform: translateY(-1px); }
+.btn-save:disabled { opacity: 0.6; cursor: not-allowed; }
+.btn-logout { background: rgba(239,68,68,0.08); color: #dc2626; border: 1px solid rgba(239,68,68,0.15); }
+.btn-logout:hover { background: rgba(239,68,68,0.12); }
+
+.content { position: relative; z-index: 1; max-width: 900px; margin: 0 auto; padding: 24px 16px 60px; display: flex; flex-direction: column; gap: 16px; }
+
+.avatar-section { display: flex; flex-direction: column; align-items: center; padding: 20px 0 8px; }
+.avatar { width: 72px; height: 72px; border-radius: 50%; background-image: url(../assets/user.svg); background-size: 80%; background-repeat: no-repeat; background-position: center; background-color: rgba(139,92,246,0.08); border: 3px solid rgba(139,92,246,0.18); margin-bottom: 10px; }
+.avatar-name { font-size: 20px; font-weight: 800; color: #1a1028; margin-bottom: 3px; }
+.avatar-sub { font-size: 13px; color: #aaa; }
+
+.card { background: rgba(255,255,255,0.78); border: 1px solid rgba(255,255,255,0.9); border-radius: 20px; padding: 20px; backdrop-filter: blur(12px); box-shadow: 0 2px 16px rgba(100,80,200,0.06); }
+.card-title { display: flex; align-items: center; gap: 10px; font-size: 15px; font-weight: 700; color: #222; margin-bottom: 16px; }
+.title-bar { width: 3px; height: 16px; background: linear-gradient(180deg, #8b5cf6, #6d28d9); border-radius: 2px; flex-shrink: 0; }
+.bar-amber { background: linear-gradient(180deg, #f59e0b, #d97706); }
+.title-actions { margin-left: auto; display: flex; gap: 8px; }
+
+.form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 14px; }
+.field { display: flex; flex-direction: column; gap: 6px; }
+.field.full { grid-column: 1/-1; }
+.field label { font-size: 12px; font-weight: 700; color: #888; text-transform: uppercase; letter-spacing: 0.04em; }
+.field input, .field select, .field textarea {
+  padding: 10px 13px; background: rgba(245,243,255,0.6);
+  border: 1.5px solid rgba(139,92,246,0.1); border-radius: 10px;
+  font-size: 14px; color: #333; outline: none; transition: all 0.2s; font-family: inherit;
 }
+.field input:focus, .field select:focus, .field textarea:focus { border-color: rgba(139,92,246,0.4); background: white; box-shadow: 0 0 0 3px rgba(139,92,246,0.07); }
+.field textarea { min-height: 90px; resize: vertical; }
 
-* {
-  box-sizing: border-box;
-  margin: 0;
-  padding: 0;
-}
+.competitions-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
 
-body {
-  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
-  line-height: 1.6;
-  color: var(--dark-color);
-}
+.msg-btn { display: flex; align-items: center; gap: 5px; padding: 5px 12px; background: rgba(139,92,246,0.08); color: #7c3aed; border: 1px solid rgba(139,92,246,0.15); border-radius: 16px; font-size: 12px; font-weight: 600; cursor: pointer; margin-left: auto; transition: all 0.2s; }
+.msg-btn:hover { background: rgba(139,92,246,0.14); }
+.btn-green { background: rgba(52,211,153,0.1); color: #059669; border-color: rgba(52,211,153,0.2); }
+.btn-green:hover { background: rgba(52,211,153,0.16); }
 
-/* 页面布局 */
-.personal-page {
-  min-height: 100vh;
-  display: flex;
-  flex-direction: column;
-  position: relative;
-}
+.project-list { display: flex; flex-direction: column; gap: 2px; }
+.project-item { display: flex; align-items: center; justify-content: space-between; padding: 10px 12px; border-radius: 10px; cursor: pointer; transition: all 0.2s; }
+.project-item:hover { background: rgba(139,92,246,0.05); }
+.project-name { font-size: 14px; color: #333; font-weight: 500; flex: 1; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
+.project-action { font-size: 13px; color: #aaa; flex-shrink: 0; margin-left: 8px; }
+.project-item:hover .project-action { color: #8b5cf6; }
+.empty-list { text-align: center; padding: 20px; font-size: 13px; color: #ccc; }
 
-.action-buttons {
-  position: absolute;
-  top: 20px;
-  right: 20px;
-  display: flex;
-  gap: 1rem;
-  z-index: 10;
-}
+.toast { position: fixed; bottom: 32px; left: 50%; transform: translateX(-50%); background: rgba(240,253,244,0.96); border: 1px solid rgba(52,211,153,0.3); border-radius: 14px; padding: 12px 20px; font-size: 14px; font-weight: 600; color: #065f46; display: flex; align-items: center; gap: 8px; box-shadow: 0 8px 32px rgba(0,0,0,0.1); z-index: 999; }
+.toast-enter-active, .toast-leave-active { transition: all 0.3s; }
+.toast-enter-from, .toast-leave-to { opacity: 0; transform: translateX(-50%) translateY(12px); }
 
-#user-img {
-  display: flex;
-  height: 70px;
-  width: 70px;
-  margin: 20px auto;
-  border-radius: 50%;
-  background-repeat: no-repeat;
-  background-size: 90%;
-  background-position: center;
-  background-image: url(../assets/user.svg);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-}
-
-.content-container {
-  flex: 1;
-  padding: 2rem;
-  max-width: 1200px;
-  margin: 0 auto;
-  width: 100%;
-}
-
-/* 卡片样式 */
-.profile-card,
-.competition-card {
-  background-color: white;
-  border-radius: 20px;
-  box-shadow: var(--box-shadow);
-  padding: 2rem;
-  margin-bottom: 2.5rem;
-  transition: var(--transition);
-}
-
-.card-title {
-  display: flex;
-  align-items: center;
-  gap: 0.8rem;
-  margin-bottom: 1.5rem;
-  color: var(--dark-color);
-  font-size: 1.5rem;
-  font-weight: 600;
-  padding-bottom: 0.8rem;
-  border-bottom: 1px solid #eee;
-}
-
-.user-icon {
-  width: 24px;
-  height: 24px;
-  color: var(--primary-color);
-}
-
-.trophy-icon {
-  width: 24px;
-  height: 24px;
-  color: var(--warning-color);
-}
-
-.save-icon,
-.logout-icon {
-  width: 18px;
-  height: 18px;
-}
-
-/* 按钮样式 */
-button {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 0.5rem;
-  padding: 0.5rem 0.7rem;
-  border: none;
-  border-radius: 13px;
-  font-size: 0.7rem;
-  font-weight: 500;
-  cursor: pointer;
-  transition: var(--transition);
-  color: white;
-}
-
-.save-button {
-  background-color: #5d8f69;
-  color: white;
-}
-
-.logout-button {
-  background-color: #e26b76;
-  color: white;
-}
-
-.save-button:hover {
-  background-color: #4c7f5a;
-}
-
-.logout-button:hover {
-  background-color: #d64d57;
-}
-
-/*创办*/
-.create-btn {
-  position: absolute;
-  right: 60px;
-  background-color: #4CAF50 ;
-  color: white ;
-  padding: 0.3rem 0.6rem;
-  border-radius: 20px;
-  cursor: pointer;
-  transition: var(--transition);
-}
-
-.create-btn:hover {
-  background-color: #3e8e41 ;
-}
-
-.message {
-  right: 0;
-}
-
-/* 表单元素样式 */
-.section-label,
-.info-item label {
-  display: block;
-  margin-bottom: 0.8rem;
-  font-size: 1rem;
-  font-weight: 600;
-  color: var(--dark-color);
-}
-
-.styled-input,
-.styled-select,
-.styled-textarea {
-  font-family: inherit;
-  font-size: 1rem;
-  color: var(--dark-color);
-  width: 100%;
-  padding: 0.8rem 1rem;
-  border: 1px solid #ddd;
-  border-radius: 8px;
-  transition: var(--transition);
-}
-
-.styled-input:focus,
-.styled-select:focus,
-.styled-textarea:focus {
-  border-color: var(--primary-color);
-  outline: none;
-  box-shadow: 0 0 0 3px rgba(67, 97, 238, 0.2);
-}
-
-.styled-textarea {
-  min-height: 120px;
-  resize: vertical;
-}
-
-.basic-info-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-  gap: 1.5rem;
-  margin: 2rem 0;
-}
-
-.info-item {
-  display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
-}
-
-.select-wrapper {
-  position: relative;
-}
-
-.select-arrow {
-  position: absolute;
-  top: 50%;
-  right: 1rem;
-  transform: translateY(-50%);
-  width: 0;
-  height: 0;
-  border-left: 5px solid transparent;
-  border-right: 5px solid transparent;
-  border-top: 6px solid var(--gray-color);
-  pointer-events: none;
-}
-
-/* 竞赛信息样式 */
-.projects-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-  gap: 1.5rem;
-}
-
-.project-category {
-  background-color: white;
-  border-radius: var(--border-radius);
-  padding: 1.5rem;
-  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.05);
-}
-
-.project-category:hover {
-  transform: translateY(-3px);
-  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
-}
-
-.project-title {
-  display: flex;
-  align-items: center;
-  position: relative;
-  gap: 0.8rem;
-  margin-bottom: 1.2rem;
-  font-size: 1.2rem;
-  color: var(--dark-color);
-}
-
-.status-badge {
-  display: inline-block;
-  width: 12px;
-  height: 12px;
-  border-radius: 50%;
-}
-
-.status-badge.applied {
-  background-color: var(--warning-color);
-}
-
-.status-badge.created {
-  background-color: var(--primary-color);
-}
-.message {
-  position: absolute;
-  right: 0;
-}
-
-.project-list {
-  list-style: none;
-}
-
-.project-item {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 0.8rem 0;
-  border-bottom: 1px solid #eee;
-}
-
-.project-name {
-  font-weight: 500;
-  color: var(--dark-color);
-}
-
-.project-status {
-  font-size: 0.85rem;
-  padding: 0.3rem 0.6rem;
-  border-radius: 20px;
-  background-color: #f0f0f0;
-  color: var(--gray-color);
-  cursor: pointer;
-  transition: var(--transition);
-}
-
-.project-status:hover {
-  background-color: #e0e0e0;
-}
-
-.empty-project {
-  text-align: center;
-  color: var(--gray-color);
-  padding: 1rem 0;
-}
-
-/* 响应式设计 */
-@media (max-width: 768px) {
-  .action-buttons {
-    position: static;
-    width: 100%;
-    display: flex;
-    justify-content: center;
-    gap: 1rem;
-    margin-bottom: 1rem;
-  }
-
-  .basic-info-grid {
-    grid-template-columns: 1fr;
-  }
-
-  .projects-grid {
-    grid-template-columns: 1fr;
-  }
-
-  .content-container {
-    padding: 1rem;
-  }
-
-  .profile-card,
-  .competition-card {
-    padding: 1.5rem;
-  }
+@media (max-width: 600px) {
+  .form-grid, .competitions-grid { grid-template-columns: 1fr; }
+  .nav { padding: 12px 16px; }
 }
 </style>

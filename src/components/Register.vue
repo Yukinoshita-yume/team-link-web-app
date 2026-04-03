@@ -3,6 +3,12 @@
     <div class="blob blob1"></div>
     <div class="blob blob2"></div>
     <div class="card">
+      <button class="home-btn" @click="goToHome">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
+          <path d="M19 12H5M12 5l-7 7 7 7"/>
+        </svg>
+        <span>返回首页</span>
+      </button>
       <div class="logo">
         <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="8.5" cy="7" r="4"/><line x1="20" y1="8" x2="20" y2="14"/><line x1="23" y1="11" x2="17" y2="11"/></svg>
       </div>
@@ -66,6 +72,7 @@ const handleRegister = async () => {
   if (password.value !== confirmPassword.value) { alert('两次密码不一致'); return }
   await register()
 }
+const goToHome = () => router.push('/home')
 const goToLogin = () => router.push('/login')
 async function sendCode() {
   try { await sendCodeApi(email.value) } catch (e) { console.error(e) }
@@ -133,4 +140,39 @@ h1 { text-align: center; font-size: 22px; font-weight: 800; color: #1a1028; marg
 .link-text { text-align: center; font-size: 14px; color: #888; cursor: pointer; margin-top: 18px; }
 .link-text span { color: #8b5cf6; font-weight: 600; }
 .link-text span:hover { text-decoration: underline; }
+.home-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: rgba(139, 92, 246, 0.05);
+  border: 1px solid rgba(139, 92, 246, 0.1);
+  border-radius: 10px;
+  padding: 6px 12px;
+  color: #8b5cf6;
+  font-size: 13px;
+  font-weight: 600;
+
+  cursor: pointer;
+  margin-bottom: 24px;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.home-btn svg {
+  transition: transform 0.3s ease;
+}
+
+.home-btn:hover {
+  background: rgba(139, 92, 246, 0.12);
+  border-color: rgba(139, 92, 246, 0.25);
+  color: #7c3aed;
+  box-shadow: 0 4px 12px rgba(139, 92, 246, 0.08);
+}
+
+.home-btn:hover svg {
+  transform: translateX(-3px);
+}
+
+.home-btn:active {
+  transform: scale(0.96);
+}
 </style>

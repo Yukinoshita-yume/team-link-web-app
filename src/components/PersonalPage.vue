@@ -162,8 +162,8 @@ onMounted(() => {
 .blob2 { width: 400px; height: 400px; background: rgba(196,181,253,0.12); bottom: 0; left: -60px; }
 
 .nav { position: sticky; top: 0; z-index: 50; display: flex; align-items: center; justify-content: space-between; padding: 14px 24px; background: rgba(255,255,255,0.85); backdrop-filter: blur(16px); border-bottom: 1px solid rgba(0,0,0,0.05); }
-.nav-title { font-size: 22px; font-weight: 800; color: #1a1028; }
-.nav-actions { display: flex; gap: 10px; }
+.nav-title { position: absolute; left: 50%; transform: translateX(-50%); font-size: 22px; font-weight: 800; color: #1a1028; }
+.nav-actions { margin-left: auto; display: flex; gap: 10px; }
 .btn-save, .btn-logout { display: flex; align-items: center; gap: 6px; padding: 8px 16px; border: none; border-radius: 20px; font-size: 13px; font-weight: 600; cursor: pointer; transition: all 0.2s; }
 .btn-save { background: linear-gradient(135deg, #8b5cf6, #6d28d9); color: white; box-shadow: 0 3px 12px rgba(109,40,217,0.22); }
 .btn-save:hover:not(:disabled) { transform: translateY(-1px); }

@@ -3,7 +3,12 @@
     <div class="blob blob1"></div>
     <div class="blob blob2"></div>
     <div class="card">
-      <button class="back-btn" @click="goToLogin">← 返回登录</button>
+      <button class="back-btn" @click="goToLogin">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
+          <path d="M19 12H5M12 5l-7 7 7 7"/>
+        </svg>
+        <span>返回登录</span>
+      </button>
       <div class="logo">
         <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
       </div>
@@ -96,10 +101,41 @@ async function changePassword() {
   box-shadow: 0 8px 40px rgba(120,80,220,0.1), 0 2px 8px rgba(0,0,0,0.06);
 }
 .back-btn {
-  background: none; border: none; color: #8b5cf6; font-size: 13px;
-  cursor: pointer; padding: 0; margin-bottom: 20px; display: block;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: rgba(139, 92, 246, 0.05);
+  border: 1px solid rgba(139, 92, 246, 0.1);
+  border-radius: 10px;
+  padding: 6px 12px;
+
+  color: #8b5cf6;
+  font-size: 13px;
+  font-weight: 600;
+
+  cursor: pointer;
+  margin-bottom: 24px;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
-.back-btn:hover { text-decoration: underline; }
+
+.back-btn svg {
+  transition: transform 0.3s ease;
+}
+
+.back-btn:hover {
+  background: rgba(139, 92, 246, 0.12);
+  border-color: rgba(139, 92, 246, 0.25);
+  color: #7c3aed;
+  box-shadow: 0 4px 12px rgba(139, 92, 246, 0.08);
+}
+
+.back-btn:hover svg {
+  transform: translateX(-3px);
+}
+
+.back-btn:active {
+  transform: scale(0.96);
+}
 .logo {
   width: 52px; height: 52px;
   background: linear-gradient(135deg, #8b5cf6, #6d28d9);

@@ -3,7 +3,10 @@
     <div class="blob blob1"></div>
     <div class="blob blob2"></div>
     <nav class="nav">
-      <button class="back-btn" @click="handleExit">← 返回</button>
+      <button class="back-btn" @click="handleExit">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M19 12H5M12 5l-7 7 7 7"/></svg>
+        返回
+      </button>
     </nav>
     <div class="content">
       <div class="avatar-section">
@@ -77,8 +80,25 @@ onMounted(() => userInfoById())
 .blob1 { width: 400px; height: 400px; background: rgba(167,139,250,0.18); top: -100px; right: -80px; }
 .blob2 { width: 350px; height: 350px; background: rgba(196,181,253,0.12); bottom: 0; left: -60px; }
 .nav { position: sticky; top: 0; z-index: 10; padding: 14px 20px; background: rgba(255,255,255,0.82); backdrop-filter: blur(16px); border-bottom: 1px solid rgba(0,0,0,0.05); }
-.back-btn { background: none; border: 1px solid rgba(0,0,0,0.1); border-radius: 20px; padding: 7px 16px; font-size: 14px; color: #555; cursor: pointer; transition: all 0.2s; }
-.back-btn:hover { background: #f5f5f5; }
+.back-btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 7px 16px;
+  background: rgba(255,255,255,0.8);
+  border: 1px solid rgba(0,0,0,0.08);
+  border-radius: 20px;
+  font-size: 14px;
+  color: #555;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.back-btn:hover {
+  background: white;
+  color: #333;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+  transform: translateY(-1px);
+}
 .content { position: relative; z-index: 1; max-width: 600px; margin: 0 auto; padding: 24px 16px 60px; display: flex; flex-direction: column; gap: 14px; }
 .avatar-section { display: flex; flex-direction: column; align-items: center; padding: 28px 0 8px; }
 .avatar { width: 80px; height: 80px; border-radius: 50%; background-image: url(../assets/user.svg); background-size: 80%; background-repeat: no-repeat; background-position: center; background-color: rgba(139,92,246,0.08); border: 3px solid rgba(139,92,246,0.2); margin-bottom: 12px; }

@@ -9,6 +9,7 @@ import ProjectDetail from "@/components/ProjectDetail.vue";
 import MessagePage from "@/components/MessagePage.vue";
 import MessagePage2 from "@/components/MessagePage2.vue";
 import userPage from "@/components/userPage.vue";
+import SearchPage from "@/components/SearchPage.vue";
 
 const routes = [
   { path: "/", redirect: "/home" }, // 默认跳转到登录页
@@ -22,11 +23,12 @@ const routes = [
   { path: "/message-page", component: MessagePage },
   { path: "/message-page2", component: MessagePage2 },
   { path: "/user-page", component: userPage },
-  { 
-    path: "/project-detail", 
+  {
+    path: "/project-detail",
     component: ProjectDetail,
-    props: (route) => ({ id: route.query.id }) // 通过query传递id
-  }
+    props: (route) => ({ id: route.query.id }), // 通过query传递id
+  },
+  { path: "/search", component: SearchPage },
 ];
 
 const router = createRouter({

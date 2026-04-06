@@ -1,196 +1,157 @@
 <template>
-  <div class="login-container">
-    <div class="login-box">
-      <h1>登录</h1>
+  <div class="page">
+    <div class="blob blob1"></div>
+    <div class="blob blob2"></div>
+    <div class="card">
+      <button class="home-btn" @click="goToHome">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
+          <path d="M19 12H5M12 5l-7 7 7 7"/>
+        </svg>
+        <span>返回首页</span>
+      </button>
+      <div class="logo">
+        <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+      </div>
+      <h1>欢迎回来</h1>
+      <p class="subtitle">登录你的竞赛组队账号</p>
       <form @submit.prevent="handleLogin">
-        <div class="input-field">
-          <input type="email" v-model="email" placeholder="邮箱" required />
+        <div class="field">
+          <label>邮箱</label>
+          <input type="email" v-model="email" placeholder="请输入邮箱" required autocomplete="email"/>
         </div>
-        <div class="input-field">
-          <input
-            type="password"
-            v-model="password"
-            placeholder="密码"
-            required
-          />
+        <div class="field">
+          <label>密码</label>
+          <input type="password" v-model="password" placeholder="请输入密码" required autocomplete="current-password"/>
         </div>
-        <span class="forgot-password-inline" @click="goToResetPassword"
-          >忘记密码？</span
-        >
-        <button type="submit" class="btn">登录</button>
-        <p class="register-text" @click="goToRegister">
-          还没有账号？<span>点击注册</span>
-        </p>
+        <div class="forgot" @click="goToResetPassword">忘记密码？</div>
+        <button type="submit" class="btn-primary">登录</button>
       </form>
+      <div class="divider"><span>或者</span></div>
+      <div class="link-text" @click="goToRegister">还没有账号？<span>立即注册</span></div>
     </div>
   </div>
 </template>
 
 <script setup>
-import { ref } from "vue";
-import { useRouter } from "vue-router";
-import { loginApi } from "@/api/api";
-import { setToken } from "@/utils/auth";
-import { walkIdentifiers } from "vue/compiler-sfc";
+import { ref } from 'vue'
+import { useRouter } from 'vue-router'
+import { loginApi } from '@/api/api'
+import { setToken } from '@/utils/auth'
 
-const router = useRouter();
+const router = useRouter()
+const email = ref('')
+const password = ref('')
 
-const email = ref("");
-const password = ref("");
-
-// 处理登录逻辑
-const handleLogin = () => {
-  // console.log("Logging in with:", email.value, password.value);
-
-  AxiosLogin();
-};
-
-// 跳转到注册页面
-const goToRegister = () => {
-  router.push("/register"); // 这里的 router.push 确保跳转到 /register
-};
-
-// 跳转到重置密码
-const goToResetPassword = () => {
-  router.push("/reset-password");
-};
-async function AxiosLogin() {
+const handleLogin = async () => {
   try {
-    const res = await loginApi(email.value, password.value);
-    console.log(res.msg);
-    console.log(res.data);
-    setToken(res.data);
-    if (res.code == 0) router.push("/home");
-    else if (res.code == 1) {
-      alert("登陆失败: " + res.msg);
-    }
-  } catch (error) {
-    console.error("登录失败: ", error);
-  }
+    const res = await loginApi(email.value, password.value)
+    setToken(res.data)
+    if (res.code === 0) router.push('/home')
+    else alert('登录失败: ' + res.msg)
+  } catch (e) { console.error(e) }
 }
+const goToHome = () => router.push("/home")
+const goToRegister = () => router.push('/register')
+const goToResetPassword = () => router.push('/reset-password')
 </script>
 
 <style scoped>
-/* 登录页面整体样式 */
-.login-container {
+* { box-sizing: border-box; margin: 0; padding: 0; }
+.page {
+  min-height: 100vh;
   display: flex;
+  align-items: center;
   justify-content: center;
-  align-items: center;
-  height: 100vh;
-}
-
-/* 登录框 */
-.login-box {
-  background: white;
-  padding: 2rem;
-  border-radius: 10px;
-  box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
-  text-align: center;
-  width: 300px;
-}
-
-h1 {
-  margin-bottom: 1.5rem;
-  color: #333;
-}
-
-/* 输入框样式 */
-.input-field {
-  display: flex;
-  align-items: center;
-  background: #f0f0f0;
-  padding: 0.5rem 1rem;
-  border-radius: 25px;
-  margin: 1rem 0;
+  background: linear-gradient(135deg, #f8f4ff 0%, #f0f4ff 60%, #fdf4ff 100%);
   position: relative;
+  overflow: hidden;
+  padding: 20px;
 }
-
-.input-field input {
-  border: none;
-  background: none;
-  outline: none;
-  width: 100%;
-  font-size: 1rem;
+.blob { position: fixed; border-radius: 50%; filter: blur(80px); pointer-events: none; z-index: 0; }
+.blob1 { width: 500px; height: 500px; background: rgba(167,139,250,0.2); top: -150px; right: -100px; }
+.blob2 { width: 400px; height: 400px; background: rgba(196,181,253,0.15); bottom: -100px; left: -80px; }
+.card {
+  position: relative; z-index: 1;
+  background: rgba(255,255,255,0.82);
+  backdrop-filter: blur(20px);
+  border: 1px solid rgba(255,255,255,0.9);
+  border-radius: 24px;
+  padding: 40px 36px;
+  width: 100%; max-width: 400px;
+  box-shadow: 0 8px 40px rgba(120,80,220,0.1), 0 2px 8px rgba(0,0,0,0.06);
 }
+.logo {
+  width: 56px; height: 56px;
+  background: linear-gradient(135deg, #8b5cf6, #6d28d9);
+  border-radius: 16px;
+  display: flex; align-items: center; justify-content: center;
+  color: white; margin: 0 auto 20px;
+}
+h1 { text-align: center; font-size: 24px; font-weight: 800; color: #1a1028; margin-bottom: 6px; }
+.subtitle { text-align: center; font-size: 14px; color: #999; margin-bottom: 28px; }
+.field { margin-bottom: 18px; }
+.field label { display: block; font-size: 13px; font-weight: 600; color: #555; margin-bottom: 7px; }
+.field input {
+  width: 100%; padding: 12px 16px;
+  background: rgba(245,243,255,0.7);
+  border: 1.5px solid rgba(139,92,246,0.12);
+  border-radius: 12px; font-size: 14px; color: #333; outline: none;
+  transition: all 0.2s;
+}
+.field input:focus { border-color: rgba(139,92,246,0.5); background: white; box-shadow: 0 0 0 3px rgba(139,92,246,0.08); }
+.field input::placeholder { color: #ccc; }
+.forgot { text-align: right; font-size: 13px; color: #8b5cf6; cursor: pointer; margin-bottom: 22px; }
+.forgot:hover { text-decoration: underline; }
+.btn-primary {
+  width: 100%; padding: 13px;
+  background: linear-gradient(135deg, #8b5cf6, #6d28d9);
+  color: white; border: none; border-radius: 12px;
+  font-size: 15px; font-weight: 600; cursor: pointer;
+  box-shadow: 0 4px 18px rgba(109,40,217,0.28);
+  transition: all 0.2s;
+}
+.btn-primary:hover { transform: translateY(-1px); box-shadow: 0 6px 22px rgba(109,40,217,0.35); }
+.divider { display: flex; align-items: center; gap: 12px; margin: 20px 0; }
+.divider::before, .divider::after { content: ''; flex: 1; height: 1px; background: rgba(0,0,0,0.07); }
+.divider span { font-size: 13px; color: #ccc; }
+.link-text { text-align: center; font-size: 14px; color: #888; cursor: pointer; }
+.link-text span { color: #8b5cf6; font-weight: 600; }
+.link-text span:hover { text-decoration: underline; }
+.home-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
 
-/* 右下角忘记密码 */
-.forgot-password-inline {
-  display: block; /* 让它换行到密码框的下面 */
-  text-align: right; /* 让它对齐到右侧 */
-  font-size: 0.8rem;
-  color: rgb(150, 107, 193);
+  background: rgba(139, 92, 246, 0.05);
+  border: 1px solid rgba(139, 92, 246, 0.1);
+  border-radius: 10px;
+  padding: 6px 12px;
+
+  color: #8b5cf6;
+  font-size: 13px;
+  font-weight: 600;
+
   cursor: pointer;
-  margin-top: 5px; /* 与输入框保持一些间距 */
+  margin-bottom: 24px;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-.forgot-password-inline:hover {
-  text-decoration: underline;
+.home-btn svg {
+  transition: transform 0.3s ease;
 }
 
-/* 按钮样式 */
-.btn {
-  width: 100%;
-  padding: 0.6rem;
-  border: none;
-  border-radius: 25px;
-  background-color: rgb(150, 107, 193);
-  color: white;
-  font-size: 1rem;
-  cursor: pointer;
-  transition: 0.3s;
-  margin-top: 1rem;
+.home-btn:hover {
+  background: rgba(139, 92, 246, 0.12);
+  border-color: rgba(139, 92, 246, 0.25);
+  color: #7c3aed;
+  box-shadow: 0 4px 12px rgba(139, 92, 246, 0.08);
 }
 
-.btn:hover {
-  background-color: rgb(130, 97, 173);
+.home-btn:hover svg {
+  transform: translateX(-3px);
 }
 
-/* 注册链接 */
-.register-text {
-  margin-top: 1rem;
-  font-size: 0.9rem;
-  color: #333;
-  cursor: pointer;
-}
-
-.register-text span {
-  color: rgb(150, 107, 193);
-}
-
-.register-text span:hover {
-  text-decoration: underline;
-}
-
-/* 手机设备样式（宽度小于 480px） */
-@media (max-width: 480px) {
-  .login-box {
-    width: 60%;
-    padding: 1rem;
-  }
-
-  h1 {
-    font-size: 1.5rem;
-  }
-
-  .input-field {
-    padding: 0.4rem 0.8rem;
-  }
-
-  .input-field input {
-    font-size: 0.85rem;
-  }
-
-  .btn {
-    font-size: 0.85rem;
-    padding: 0.5rem;
-  }
-
-  .register-text {
-    font-size: 0.75rem;
-  }
-
-  .forgot-password-inline {
-    font-size: 0.75rem;
-  }
+.home-btn:active {
+  transform: scale(0.96);
 }
 </style>

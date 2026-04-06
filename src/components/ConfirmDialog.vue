@@ -1,31 +1,17 @@
 <template>
   <Teleport to="body">
     <Transition name="fade">
-      <div v-if="visible" class="confirm-dialog-overlay" @click.self="onCancel">
+      <div v-if="visible" class="overlay" @click.self="onCancel">
         <Transition name="scale">
-          <div class="confirm-dialog">
-            <div class="dialog-content">
-              <div class="dialog-icon">
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  viewBox="0 0 24 24"
-                  fill="currentColor"
-                >
-                  <path
-                    d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm1-13h-2v6h2V7zm0 8h-2v2h2v-2z"
-                  />
-                </svg>
-              </div>
-              <h3 class="dialog-title">{{ dialogConfig.title }}</h3>
-              <p class="dialog-message">{{ dialogConfig.message }}</p>
+          <div class="dialog" v-if="visible">
+            <div class="dialog-icon">
+              <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
             </div>
+            <h3 class="dialog-title">{{ dialogConfig.title }}</h3>
+            <p class="dialog-message">{{ dialogConfig.message }}</p>
             <div class="dialog-actions">
-              <button class="cancel-btn" @click="onCancel">
-                {{ dialogConfig.cancelText }}
-              </button>
-              <button class="confirm-btn" @click="onConfirm">
-                {{ dialogConfig.confirmText }}
-              </button>
+              <button class="btn-cancel" @click="onCancel">{{ dialogConfig.cancelText }}</button>
+              <button class="btn-confirm" @click="onConfirm">{{ dialogConfig.confirmText }}</button>
             </div>
           </div>
         </Transition>
@@ -35,159 +21,70 @@
 </template>
 
 <script setup>
-import { ref } from "vue";
-
+import { ref } from 'vue'
 const props = defineProps({
-  title: { type: String, default: "提示" },
+  title: { type: String, default: '提示' },
   message: String,
-  confirmText: { type: String, default: "确定" },
-  cancelText: { type: String, default: "取消" },
-  type: { type: String, default: "info" }, // 可以是 'info', 'warning', 'error', 'success'
-});
-
-const dialogConfig = ref({
-  title: props.title,
-  message: props.message,
-  confirmText: props.confirmText,
-  cancelText: props.cancelText,
-  type: props.type,
-});
-
-const visible = ref(false);
-let resolvePromise = null;
-
+  confirmText: { type: String, default: '确定' },
+  cancelText: { type: String, default: '取消' },
+})
+const dialogConfig = ref({ title: props.title, message: props.message, confirmText: props.confirmText, cancelText: props.cancelText })
+const visible = ref(false)
+let resolvePromise = null
 const show = (options = {}) => {
-  dialogConfig.value = { ...dialogConfig.value, ...options };
-  visible.value = true;
-  return new Promise((resolve) => {
-    resolvePromise = resolve;
-  });
-};
-
-const onConfirm = () => {
-  visible.value = false;
-  resolvePromise?.(true);
-};
-
-const onCancel = () => {
-  visible.value = false;
-  resolvePromise?.(false);
-};
-
-defineExpose({ show });
+  dialogConfig.value = { ...dialogConfig.value, ...options }
+  visible.value = true
+  return new Promise(resolve => { resolvePromise = resolve })
+}
+const onConfirm = () => { visible.value = false; resolvePromise?.(true) }
+const onCancel = () => { visible.value = false; resolvePromise?.(false) }
+defineExpose({ show })
 </script>
 
 <style scoped>
-/* 过渡动画 */
-.fade-enter-active,
-.fade-leave-active {
-  transition: opacity 0.3s ease;
+.overlay {
+  position: fixed; inset: 0;
+  background: rgba(20,10,40,0.45);
+  backdrop-filter: blur(6px);
+  display: flex; align-items: center; justify-content: center;
+  z-index: 1000; padding: 20px;
 }
-
-.fade-enter-from,
-.fade-leave-to {
-  opacity: 0;
-}
-
-.scale-enter-active,
-.scale-leave-active {
-  transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-}
-
-.scale-enter-from,
-.scale-leave-to {
-  transform: scale(0.9);
-  opacity: 0;
-}
-
-/* 对话框样式 */
-.confirm-dialog-overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: rgba(0, 0, 0, 0.5);
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  z-index: 1000;
-  backdrop-filter: blur(2px);
-}
-
-.confirm-dialog {
-  background: white;
-  padding: 24px;
-  border-radius: 12px;
-  min-width: 320px;
-  max-width: 90vw;
-  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+.dialog {
+  background: rgba(255,255,255,0.95);
+  backdrop-filter: blur(20px);
+  border: 1px solid rgba(255,255,255,0.9);
+  border-radius: 22px;
+  padding: 32px 28px 24px;
+  width: 100%; max-width: 360px;
   text-align: center;
+  box-shadow: 0 20px 60px rgba(100,60,200,0.18), 0 4px 16px rgba(0,0,0,0.08);
 }
-
-.dialog-content {
-  margin-bottom: 24px;
-}
-
 .dialog-icon {
-  margin-bottom: 16px;
+  width: 52px; height: 52px;
+  background: rgba(139,92,246,0.1);
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  margin: 0 auto 16px;
+  color: #8b5cf6;
 }
-
-.dialog-icon svg {
-  width: 48px;
-  height: 48px;
-  color: var(--dialog-icon-color, #8c62b4);
+.dialog-title { font-size: 18px; font-weight: 800; color: #1a1028; margin-bottom: 8px; }
+.dialog-message { font-size: 14px; color: #666; line-height: 1.6; margin-bottom: 24px; }
+.dialog-actions { display: flex; gap: 10px; }
+.btn-cancel, .btn-confirm {
+  flex: 1; padding: 12px;
+  border: none; border-radius: 12px;
+  font-size: 14px; font-weight: 600; cursor: pointer; transition: all 0.2s;
 }
-
-.dialog-title {
-  margin: 0 0 12px;
-  font-size: 1.25rem;
-  font-weight: 600;
-  color: #333;
-}
-
-.dialog-message {
-  margin: 0;
-  font-size: 1rem;
-  color: #666;
-  line-height: 1.5;
-}
-
-.dialog-actions {
-  display: flex;
-  justify-content: center;
-  gap: 12px;
-  margin-top: 16px;
-}
-
-button {
-  padding: 10px 20px;
-  cursor: pointer;
-  border-radius: 6px;
-  border: none;
-  font-weight: 500;
-  font-size: 0.9375rem;
-  transition: all 0.2s ease;
-  min-width: 80px;
-}
-
-.cancel-btn {
-  background: #f5f5f5;
-  color: #333;
-}
-
-.cancel-btn:hover {
-  background: #e0e0e0;
-  transform: translateY(-1px);
-}
-
-.confirm-btn {
-  background: #a163dc;
+.btn-cancel { background: rgba(0,0,0,0.05); color: #666; }
+.btn-cancel:hover { background: rgba(0,0,0,0.08); }
+.btn-confirm {
+  background: linear-gradient(135deg, #8b5cf6, #6d28d9);
   color: white;
+  box-shadow: 0 4px 14px rgba(109,40,217,0.25);
 }
-
-.confirm-btn:hover {
-  background: #72537e;
-  transform: translateY(-1px);
-}
+.btn-confirm:hover { transform: translateY(-1px); box-shadow: 0 6px 18px rgba(109,40,217,0.32); }
+.fade-enter-active, .fade-leave-active { transition: opacity 0.25s; }
+.fade-enter-from, .fade-leave-to { opacity: 0; }
+.scale-enter-active, .scale-leave-active { transition: all 0.3s cubic-bezier(0.34,1.56,0.64,1); }
+.scale-enter-from, .scale-leave-to { transform: scale(0.88); opacity: 0; }
 </style>

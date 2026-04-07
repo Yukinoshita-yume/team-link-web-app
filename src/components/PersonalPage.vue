@@ -122,12 +122,6 @@
           >
             {{ tag }}
           </div>
-          <input
-            class="tag-input"
-            v-model="editingTag"
-            placeholder="输入技能标签后回车"
-            @keydown.enter="handleAddTag"
-          />
         </div>
 
         <div class="radar-list">
@@ -159,7 +153,6 @@ import {
   allAppliedCompetitionsApi,
   allCreatedCompetitionsApi,
   getCompetenceCardApi,
-  updateSkillTagsApi
 } from '@/api/api'
 import router from '@/router'
 
@@ -186,7 +179,6 @@ const competenceCard = ref({
   llmSnapshot: ''
 })
 const loadingProfile = ref(false)
-const editingTag = ref('')
 
 const radarItems = computed(() => {
   const r = competenceCard.value.radarScores || {}
@@ -233,20 +225,6 @@ async function loadCompetenceCard() {
   }
 }
 
-const handleAddTag = async () => {
-  const v = editingTag.value.trim()
-  if (!v) return
-  const next = Array.from(new Set([...(competenceCard.value.skillTags || []), v]))
-  try {
-    const res = await updateSkillTagsApi(next)
-    if (res.code === 0) {
-      competenceCard.value.skillTags = next
-      editingTag.value = ''
-    }
-  } catch (e) {
-    console.error(e)
-  }
-}
 onMounted(() => {
   if (localUser.value.userId === -1) { router.replace('/login'); return }
   allAppliedCompetitions(); allCreatedCompetitions(); loadCompetenceCard()

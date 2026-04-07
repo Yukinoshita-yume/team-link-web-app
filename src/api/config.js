@@ -1,4 +1,4 @@
-export const BASE_URL='http://150.158.136.64:8080';
+export const BASE_URL='http://localhost:8080';
 // 用户认证相关
 export const LOGIN_URL = '/user/login';
 export const REGISTER_URL = '/user/register';
@@ -32,3 +32,8 @@ export const MEMBER_MESSAGE_URL = '/message/memberMessage';
 export const UADMITTED_MEMBERS_URL = '/message/unadmittedMembers';
 export const READ_URL = '/message/read';
 export const CREATE_MESSAGE_URL = '/message/createMessage'
+
+// 用户画像相关
+export const PROFILE_CARD_URL = '/user/profile/competence-card';
+export const PROFILE_SKILL_TAGS_URL = '/user/profile/skill-tags';
+export const PROFILE_APPLY_TEXT_URL = '/user/profile/apply-text-analysis';

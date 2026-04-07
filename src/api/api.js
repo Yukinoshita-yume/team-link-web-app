@@ -14,6 +14,9 @@ import {
   JOINCOMPETITION_URL,
   ALLMEMBERS_URL,
   COMPETITIONDETAIL_URL,
+  PROFILE_CARD_URL,
+  PROFILE_SKILL_TAGS_URL,
+  PROFILE_APPLY_TEXT_URL,
 } from "./config";
 
 const api = axios.create({
@@ -302,6 +305,36 @@ export async function deleteCompetitioinApi(params) {
 export async function aiSearchApi(query) {
   try {
     const response = await api.get("/index/aiSearch", { params: { q: query } });
+    return response;
+  } catch (error) {
+    throw error;
+  }
+}
+
+// 获取当前登录用户的能力卡片
+export async function getCompetenceCardApi() {
+  try {
+    const response = await api.get(PROFILE_CARD_URL);
+    return response;
+  } catch (error) {
+    throw error;
+  }
+}
+
+// 全量保存能力卡片（覆盖）
+export async function saveCompetenceCardApi(card) {
+  try {
+    const response = await api.put(PROFILE_CARD_URL, card);
+    return response;
+  } catch (error) {
+    throw error;
+  }
+}
+
+// 手动修正技能标签
+export async function updateSkillTagsApi(skillTags) {
+  try {
+    const response = await api.put(PROFILE_SKILL_TAGS_URL, { skillTags });
     return response;
   } catch (error) {
     throw error;

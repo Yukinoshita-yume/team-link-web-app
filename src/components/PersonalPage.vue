@@ -103,6 +103,43 @@
           </div>
         </div>
       </div>
+
+      <!-- 能力卡片 -->
+      <div class="card competence-card">
+        <div class="card-title">
+          <div class="title-bar"></div>
+          能力画像
+          <span v-if="competenceCard.totalScore != null" class="total-chip">
+            综合 {{ competenceCard.totalScore }} 分
+          </span>
+        </div>
+
+        <div class="tags-row">
+          <div
+            class="tag"
+            v-for="tag in competenceCard.skillTags"
+            :key="tag"
+          >
+            {{ tag }}
+          </div>
+          <input
+            class="tag-input"
+            v-model="editingTag"
+            placeholder="输入技能标签后回车"
+            @keydown.enter="handleAddTag"
+          />
+        </div>
+
+        <div class="radar-list">
+          <div class="radar-item" v-for="item in radarItems" :key="item.key">
+            <span class="radar-label">{{ item.label }}</span>
+            <div class="radar-bar">
+              <div class="radar-bar-fill" :style="{ width: (item.value || 0) + '%' }"></div>
+            </div>
+            <span class="radar-score">{{ item.value != null ? item.value : '-' }}</span>
+          </div>
+        </div>
+      </div>
     </div>
 
     <!-- 保存成功 Toast -->
@@ -117,7 +154,13 @@
 <script setup>
 import { ref, computed, onMounted } from 'vue'
 import { useStore } from 'vuex'
-import { updateApi, allAppliedCompetitionsApi, allCreatedCompetitionsApi } from '@/api/api'
+import {
+  updateApi,
+  allAppliedCompetitionsApi,
+  allCreatedCompetitionsApi,
+  getCompetenceCardApi,
+  updateSkillTagsApi
+} from '@/api/api'
 import router from '@/router'
 
 const store = useStore()
@@ -127,6 +170,34 @@ const saving = ref(false)
 const saveToast = ref(false)
 const appliedProjects = ref([])
 const createdProjects = ref([])
+
+const competenceCard = ref({
+  skillTags: [],
+  radarScores: {
+    technicalDepth: 0,
+    competitionExperience: 0,
+    teamwork: 0,
+    learningAbility: 0,
+    timeCommitment: 0
+  },
+  totalScore: null,
+  expertiseAreas: [],
+  availabilityHeatmap: {},
+  llmSnapshot: ''
+})
+const loadingProfile = ref(false)
+const editingTag = ref('')
+
+const radarItems = computed(() => {
+  const r = competenceCard.value.radarScores || {}
+  return [
+    { key: 'technicalDepth', label: '技术深度', value: r.technicalDepth },
+    { key: 'competitionExperience', label: '竞赛经验', value: r.competitionExperience },
+    { key: 'teamwork', label: '团队协作', value: r.teamwork },
+    { key: 'learningAbility', label: '学习能力', value: r.learningAbility },
+    { key: 'timeCommitment', label: '时间投入', value: r.timeCommitment }
+  ]
+})
 
 const saveUserInfo = async () => {
   saving.value = true
@@ -148,9 +219,37 @@ async function allAppliedCompetitions() {
 async function allCreatedCompetitions() {
   try { const res = await allCreatedCompetitionsApi({ userId: localUser.value.userId }); if (res.code === 0) createdProjects.value = res.data } catch (e) { console.error(e) }
 }
+async function loadCompetenceCard() {
+  try {
+    loadingProfile.value = true
+    const res = await getCompetenceCardApi()
+    if (res.code === 0 && res.data) {
+      competenceCard.value = res.data
+    }
+  } catch (e) {
+    console.error(e)
+  } finally {
+    loadingProfile.value = false
+  }
+}
+
+const handleAddTag = async () => {
+  const v = editingTag.value.trim()
+  if (!v) return
+  const next = Array.from(new Set([...(competenceCard.value.skillTags || []), v]))
+  try {
+    const res = await updateSkillTagsApi(next)
+    if (res.code === 0) {
+      competenceCard.value.skillTags = next
+      editingTag.value = ''
+    }
+  } catch (e) {
+    console.error(e)
+  }
+}
 onMounted(() => {
   if (localUser.value.userId === -1) { router.replace('/login'); return }
-  allAppliedCompetitions(); allCreatedCompetitions()
+  allAppliedCompetitions(); allCreatedCompetitions(); loadCompetenceCard()
 })
 </script>
 
@@ -210,6 +309,84 @@ onMounted(() => {
 .project-action { font-size: 13px; color: #aaa; flex-shrink: 0; margin-left: 8px; }
 .project-item:hover .project-action { color: #8b5cf6; }
 .empty-list { text-align: center; padding: 20px; font-size: 13px; color: #ccc; }
+
+.competence-card {
+  margin-top: 4px;
+}
+
+.tags-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-bottom: 14px;
+}
+
+.tags-row .tag {
+  padding: 4px 10px;
+  background: rgba(139,92,246,0.08);
+  color: #7c3aed;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.tag-input {
+  min-width: 140px;
+  border: none;
+  outline: none;
+  background: transparent;
+  font-size: 13px;
+  color: #555;
+}
+
+.radar-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.radar-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.radar-label {
+  width: 84px;
+  font-size: 12px;
+  color: #777;
+}
+
+.radar-bar {
+  flex: 1;
+  height: 6px;
+  border-radius: 999px;
+  background: rgba(139,92,246,0.08);
+  overflow: hidden;
+}
+
+.radar-bar-fill {
+  height: 100%;
+  border-radius: 999px;
+  background: linear-gradient(90deg, #a78bfa, #8b5cf6);
+}
+
+.radar-score {
+  width: 36px;
+  text-align: right;
+  font-size: 12px;
+  color: #555;
+}
+
+.total-chip {
+  margin-left: auto;
+  padding: 3px 10px;
+  border-radius: 999px;
+  background: rgba(16,185,129,0.08);
+  color: #059669;
+  font-size: 12px;
+  font-weight: 600;
+}
 
 .toast { position: fixed; bottom: 32px; left: 50%; transform: translateX(-50%); background: rgba(240,253,244,0.96); border: 1px solid rgba(52,211,153,0.3); border-radius: 14px; padding: 12px 20px; font-size: 14px; font-weight: 600; color: #065f46; display: flex; align-items: center; gap: 8px; box-shadow: 0 8px 32px rgba(0,0,0,0.1); z-index: 999; }
 .toast-enter-active, .toast-leave-active { transition: all 0.3s; }

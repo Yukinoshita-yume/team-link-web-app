@@ -84,9 +84,6 @@
           <button class="footer-btn btn-reject" @click="$emit('reject', applicant)">
             拒绝
           </button>
-          <button class="footer-btn btn-review" @click="$emit('review', applicant)">
-            复核
-          </button>
           <button class="footer-btn btn-approve" @click="$emit('approve', applicant)">
             通过
           </button>

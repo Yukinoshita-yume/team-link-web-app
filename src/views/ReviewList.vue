@@ -28,6 +28,10 @@
           <span class="stat-num">{{ approvedCount }}</span>
           <span class="stat-label">已通过</span>
         </div>
+        <!-- <div class="stat-chip chip-rejected">
+          <span class="stat-num">{{ rejectedCount }}</span>
+          <span class="stat-label">已拒绝</span>
+        </div> -->
       </div>
 
       <!-- 筛选栏 -->
@@ -50,6 +54,7 @@
       <div class="empty-tip" v-else-if="filteredApplicants.length === 0">暂无报名记录</div>
 
       <!-- 申请人列表 -->
+      <!-- ✅ 复用 ApplicantCard 组件，点击打开 AIReviewDrawer -->
       <div class="applicant-grid" v-else>
         <ApplicantCard
           v-for="a in filteredApplicants"
@@ -62,7 +67,7 @@
       </div>
     </div>
 
-    <!-- AIReviewDrawer -->
+    <!-- ✅ 复用 AIReviewDrawer，传入当前选中申请人 -->
     <AIReviewDrawer
       :visible="drawerVisible"
       :applicant="drawerApplicant"
@@ -72,7 +77,7 @@
       @review="handleReview"
     />
 
-    <!-- Toast -->
+    <!-- 操作反馈 Toast，与 PersonalPage 风格一致 -->
     <transition name="toast">
       <div class="toast" v-if="toast.show">
         <span>{{ toast.icon }}</span> {{ toast.msg }}
@@ -90,6 +95,7 @@ import AIReviewDrawer from '@/components/review/AIReviewDrawer.vue'
 import { unadmittedMembersApi } from '@/api/api'
 
 const route = useRoute()
+// ✅ 从路由参数获取竞赛 ID，每个竞赛审核页面独立
 const competitionId = computed(() => route.query.id)
 const competitionTitle = ref('加载中…')
 
@@ -106,6 +112,7 @@ const filters = [
   { label: '全部', value: 'all' },
   { label: '待审核', value: '待审核' },
   { label: '已通过', value: '已通过' },
+  // { label: '已拒绝', value: '已拒绝' },
 ]
 
 const filteredApplicants = computed(() => {
@@ -115,15 +122,18 @@ const filteredApplicants = computed(() => {
 
 const pendingCount = computed(() => applicants.value.filter(a => a.status === '待审核' || !a.status).length)
 const approvedCount = computed(() => applicants.value.filter(a => a.status === '已通过').length)
+const rejectedCount = computed(() => applicants.value.filter(a => a.status === '已拒绝').length)
 
 const goBack = () => router.back()
 
+// ✅ 加载当前竞赛的报名列表，与原 MessagePage2 的 unadmittedMembersApi 调用方式相同
 async function loadApplicants() {
   if (!competitionId.value) return
   loading.value = true
   try {
     const res = await unadmittedMembersApi({ competitionId: competitionId.value })
     if (res.code === 0 && res.data) {
+      // 将后端数据映射为 ApplicantCard 所需字段
       applicants.value = res.data.map(item => ({
         userId: item.userId,
         name: item.userName || '未知用户',
@@ -161,6 +171,7 @@ function showToast(icon, msg) {
   setTimeout(() => { toast.value.show = false }, 2500)
 }
 
+// ✅ 审核操作：同意 / 拒绝 / 复核，与原消息页面逻辑一致
 function handleApprove(applicant) {
   updateLocalStatus(applicant.userId, '已通过')
   drawerVisible.value = false
@@ -195,31 +206,38 @@ onMounted(() => {
 .blob { position: fixed; border-radius: 50%; filter: blur(80px); pointer-events: none; z-index: 0; }
 .blob1 { width: 500px; height: 500px; background: rgba(167,139,250,0.15); top: -120px; right: -80px; }
 
+/* 导航栏，与 PersonalPage 保持一致 */
 .nav { position: sticky; top: 0; z-index: 50; display: flex; align-items: center; justify-content: space-between; padding: 14px 24px; background: rgba(255,255,255,0.85); backdrop-filter: blur(16px); border-bottom: 1px solid rgba(0,0,0,0.05); }
 .nav-title { position: absolute; left: 50%; transform: translateX(-50%); font-size: 18px; font-weight: 800; color: #1a1028; white-space: nowrap; }
 .nav-spacer { width: 64px; }
 
+/* 返回按钮，风格与 .msg-btn 一致 */
 .btn-back { display: flex; align-items: center; gap: 5px; padding: 5px 12px; background: rgba(139,92,246,0.08); color: #7c3aed; border: 1px solid rgba(139,92,246,0.15); border-radius: 16px; font-size: 12px; font-weight: 600; cursor: pointer; transition: all 0.2s; }
 .btn-back:hover { background: rgba(139,92,246,0.14); }
 
 .content { position: relative; z-index: 1; max-width: 960px; margin: 0 auto; padding: 24px 16px 60px; display: flex; flex-direction: column; gap: 16px; }
 
+/* 统计栏 */
 .stats-row { display: flex; gap: 10px; }
 .stat-chip { display: flex; flex-direction: column; align-items: center; padding: 10px 18px; background: rgba(255,255,255,0.78); border: 1px solid rgba(255,255,255,0.9); border-radius: 14px; backdrop-filter: blur(12px); box-shadow: 0 2px 10px rgba(100,80,200,0.05); min-width: 70px; }
 .stat-num { font-size: 22px; font-weight: 800; color: #1a1028; }
 .stat-label { font-size: 11px; color: #aaa; font-weight: 600; margin-top: 2px; }
 .chip-pending .stat-num { color: #5c6bc0; }
 .chip-approved .stat-num { color: #059669; }
+.chip-rejected .stat-num { color: #dc2626; }
 
+/* 筛选栏，风格参考 .msg-btn */
 .filter-row { display: flex; gap: 8px; flex-wrap: wrap; }
 .filter-btn { padding: 5px 14px; background: rgba(139,92,246,0.06); color: #888; border: 1px solid rgba(139,92,246,0.1); border-radius: 16px; font-size: 12px; font-weight: 600; cursor: pointer; transition: all 0.2s; }
 .filter-btn.active { background: rgba(139,92,246,0.12); color: #7c3aed; border-color: rgba(139,92,246,0.25); }
 .filter-btn:hover { background: rgba(139,92,246,0.1); }
 
+/* 申请人网格 */
 .applicant-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 16px; }
 
 .empty-tip { text-align: center; padding: 40px; font-size: 14px; color: #ccc; }
 
+/* Toast，与 PersonalPage 完全一致 */
 .toast { position: fixed; bottom: 32px; left: 50%; transform: translateX(-50%); background: rgba(240,253,244,0.96); border: 1px solid rgba(52,211,153,0.3); border-radius: 14px; padding: 12px 20px; font-size: 14px; font-weight: 600; color: #065f46; display: flex; align-items: center; gap: 8px; box-shadow: 0 8px 32px rgba(0,0,0,0.1); z-index: 999; }
 .toast-enter-active, .toast-leave-active { transition: all 0.3s; }
 .toast-enter-from, .toast-leave-to { opacity: 0; transform: translateX(-50%) translateY(12px); }

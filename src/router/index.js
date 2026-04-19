@@ -10,9 +10,10 @@ import MessagePage from "@/components/MessagePage.vue";
 import MessagePage2 from "@/components/MessagePage2.vue";
 import userPage from "@/components/userPage.vue";
 import SearchPage from "@/components/SearchPage.vue";
+import ReviewList from "@/views/ReviewList.vue";   // ← 新增
 
 const routes = [
-  { path: "/", redirect: "/home" }, // 默认跳转到登录页
+  { path: "/", redirect: "/home" },
   { path: "/login", component: Login },
   { path: "/register", component: Register },
   { path: "/reset-password", component: ResetPassword },
@@ -26,9 +27,10 @@ const routes = [
   {
     path: "/project-detail",
     component: ProjectDetail,
-    props: (route) => ({ id: route.query.id }), // 通过query传递id
+    props: (route) => ({ id: route.query.id }),
   },
   { path: "/search", component: SearchPage },
+  { path: "/review", component: ReviewList },      // ← 新增
 ];
 
 const router = createRouter({

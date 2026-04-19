@@ -61,16 +61,21 @@
       <div class="competitions-grid">
         <!-- 我报名的 -->
         <div class="card">
-          <div class="card-title">
-            <div class="title-bar bar-amber"></div>
-            我报名的项目
-            <button class="msg-btn" @click="goToMessagePage">
-              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
-              消息
-            </button>
-          </div>
+  <div class="card-title">
+    <div class="title-bar bar-amber"></div>
+    我报名的项目
+    <button class="msg-btn" @click="goToMessagePage">
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+      消息
+    </button>
+  </div>
           <div class="project-list">
-            <div class="project-item" v-for="p in appliedProjects" :key="p.competitionId" @click="toCompetitionDetail(p.competitionId)">
+            <div
+              class="project-item"
+              v-for="p in appliedProjects"
+              :key="p.competitionId"
+              @click="toCompetitionDetail(p.competitionId)"
+            >
               <span class="project-name">{{ p.title }}</span>
               <span class="project-action">查看 ›</span>
             </div>
@@ -83,21 +88,31 @@
           <div class="card-title">
             <div class="title-bar"></div>
             我创办的项目
+            <!-- ✅ 保留「创办」按钮，❌ 已移除「消息」按钮 -->
             <div class="title-actions">
               <button class="msg-btn btn-green" @click="handleCreateProject">
                 <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
                 创办
               </button>
-              <button class="msg-btn" @click="goToMessagePage2">
-                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
-                消息
-              </button>
             </div>
           </div>
           <div class="project-list">
-            <div class="project-item" v-for="p in createdProjects" :key="p.competitionId" @click="toCompetitionDetail(p.competitionId)">
+            <!-- ✅ 每个竞赛项新增「管理」「审核」按钮，替代原来的整行点击跳转 -->
+            <div
+              class="project-item"
+              v-for="p in createdProjects"
+              :key="p.competitionId"
+            >
               <span class="project-name">{{ p.title }}</span>
-              <span class="project-action">管理 ›</span>
+              <!-- ✅ 新增：竞赛操作按钮组 -->
+              <div class="item-actions">
+                <button class="item-btn btn-manage" @click.stop="toCompetitionDetail(p.competitionId)">
+                  管理
+                </button>
+                <button class="item-btn btn-review" @click.stop="toReview(p.competitionId)">
+                  审核
+                </button>
+              </div>
             </div>
             <div class="empty-list" v-if="createdProjects.length === 0">暂无创办项目</div>
           </div>
@@ -202,8 +217,12 @@ const saveUserInfo = async () => {
 const handleLogout = () => router.push('/home')
 const handleCreateProject = () => router.push('/create-project')
 const toCompetitionDetail = (id) => router.push({ path: '/project-detail', query: { id } })
+
+// ✅ 新增：跳转到该竞赛的独立审核页面
+const toReview = (id) => router.push({ path: '/review', query: { id } })
 const goToMessagePage = () => router.push('/message-page')
-const goToMessagePage2 = () => router.push('/message-page2')
+
+// ❌ 已移除：goToMessagePage / goToMessagePage2（原消息审核入口）
 
 async function allAppliedCompetitions() {
   try { const res = await allAppliedCompetitionsApi({ userId: localUser.value.userId }); if (res.code === 0) appliedProjects.value = res.data } catch (e) { console.error(e) }
@@ -281,12 +300,20 @@ onMounted(() => {
 .btn-green:hover { background: rgba(52,211,153,0.16); }
 
 .project-list { display: flex; flex-direction: column; gap: 2px; }
-.project-item { display: flex; align-items: center; justify-content: space-between; padding: 10px 12px; border-radius: 10px; cursor: pointer; transition: all 0.2s; }
+.project-item { display: flex; align-items: center; justify-content: space-between; padding: 10px 12px; border-radius: 10px; transition: all 0.2s; }
 .project-item:hover { background: rgba(139,92,246,0.05); }
 .project-name { font-size: 14px; color: #333; font-weight: 500; flex: 1; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
 .project-action { font-size: 13px; color: #aaa; flex-shrink: 0; margin-left: 8px; }
 .project-item:hover .project-action { color: #8b5cf6; }
 .empty-list { text-align: center; padding: 20px; font-size: 13px; color: #ccc; }
+
+/* ✅ 新增：竞赛操作按钮组样式，与 .msg-btn 风格保持一致 */
+.item-actions { display: flex; gap: 6px; flex-shrink: 0; margin-left: 8px; }
+.item-btn { display: flex; align-items: center; padding: 4px 10px; border-radius: 14px; font-size: 12px; font-weight: 600; cursor: pointer; border: 1px solid transparent; transition: all 0.2s; }
+.btn-manage { background: rgba(139,92,246,0.08); color: #7c3aed; border-color: rgba(139,92,246,0.15); }
+.btn-manage:hover { background: rgba(139,92,246,0.14); }
+.btn-review { background: rgba(245,158,11,0.08); color: #d97706; border-color: rgba(245,158,11,0.2); }
+.btn-review:hover { background: rgba(245,158,11,0.14); }
 
 .competence-card {
   margin-top: 4px;

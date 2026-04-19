@@ -121,9 +121,13 @@
           <div class="banner-icon">👑</div>
           <div class="banner-text">
             <div class="banner-title">你是这支队伍的队长</div>
-            <div class="banner-desc">在消息页面审核成员申请，管理队伍成员</div>
+            <div class="banner-desc">管理队伍成员，审核成员申请</div>
           </div>
         </div>
+        <button class="action-btn btn-review" @click="router.push('/review')" style="margin-bottom: 10px;">
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+          审核申请者
+        </button>
         <button class="action-btn btn-ghost-danger" @click="handleDelete">
           解散队伍
         </button>
@@ -571,7 +575,12 @@ const handleExit = () => window.history.length > 1 ? window.history.back() : win
   color: #dc2626;
 }
 .btn-ghost-danger:hover { background: rgba(239,68,68,0.05); }
-
+.btn-review {
+  background: linear-gradient(135deg, #5c6bc0 0%, #3949ab 100%);
+  color: white;
+  box-shadow: 0 4px 18px rgba(57,73,171,0.28);
+}
+.btn-review:hover { transform: translateY(-1px); box-shadow: 0 6px 22px rgba(57,73,171,0.35); }
 /* 信息卡片 */
 .info-card { padding: 20px 22px; }
 .card-title {

@@ -28,10 +28,10 @@
           <span class="stat-num">{{ approvedCount }}</span>
           <span class="stat-label">已通过</span>
         </div>
-        <div class="stat-chip chip-rejected">
+        <!-- <div class="stat-chip chip-rejected">
           <span class="stat-num">{{ rejectedCount }}</span>
           <span class="stat-label">已拒绝</span>
-        </div>
+        </div> -->
       </div>
 
       <!-- 筛选栏 -->
@@ -92,16 +92,13 @@ import { useRoute } from 'vue-router'
 import router from '@/router'
 import ApplicantCard from '@/components/review/ApplicantCard.vue'
 import AIReviewDrawer from '@/components/review/AIReviewDrawer.vue'
-import { unadmittedMembersApi, joinCompetitionApi } from '@/api/api'
-import { useStore } from 'vuex'
+import { unadmittedMembersApi } from '@/api/api'
 
 const route = useRoute()
-
 // ✅ 从路由参数获取竞赛 ID，每个竞赛审核页面独立
 const competitionId = computed(() => route.query.id)
 const competitionTitle = ref('加载中…')
-const store = useStore()
-const userId = computed(() => store.state.user.userId)
+
 const loading = ref(false)
 const applicants = ref([])
 const selectedId = ref(null)
@@ -115,7 +112,7 @@ const filters = [
   { label: '全部', value: 'all' },
   { label: '待审核', value: '待审核' },
   { label: '已通过', value: '已通过' },
-  { label: '已拒绝', value: '已拒绝' },
+  // { label: '已拒绝', value: '已拒绝' },
 ]
 
 const filteredApplicants = computed(() => {
@@ -131,18 +128,16 @@ const goBack = () => router.back()
 
 // ✅ 加载当前竞赛的报名列表，与原 MessagePage2 的 unadmittedMembersApi 调用方式相同
 async function loadApplicants() {
-  console.log('fun')
-  console.log(competitionId.value)
   if (!competitionId.value) return
   loading.value = true
   try {
-    const res = await unadmittedMembersApi({ competitionId:competitionId.value })
-    console.log(res)
+    const res = await unadmittedMembersApi({ competitionId: competitionId.value })
     if (res.code === 0 && res.data) {
       // 将后端数据映射为 ApplicantCard 所需字段
       applicants.value = res.data.map(item => ({
         userId: item.userId,
         name: item.userName || '未知用户',
+        age: item.userAge || '-',
         position: item.userMajor || '未填写',
         location: item.userUniversity || '未填写',
         score: item.aiScore || 0,
@@ -158,14 +153,6 @@ async function loadApplicants() {
     console.error(e)
   } finally {
     loading.value = false
-  }
-}
-
-async function acceptUser(userId) {
-  try{
-    const res = await joinCompetitionApi(competitionId.value, userId)
-  }catch (e){
-    console.error(e)
   }
 }
 
@@ -187,7 +174,6 @@ function showToast(icon, msg) {
 // ✅ 审核操作：同意 / 拒绝 / 复核，与原消息页面逻辑一致
 function handleApprove(applicant) {
   updateLocalStatus(applicant.userId, '已通过')
-  acceptUser(applicant.userId)
   drawerVisible.value = false
   showToast('✅', `已通过 ${applicant.name} 的申请`)
 }
@@ -197,7 +183,7 @@ function handleReject(applicant) {
   drawerVisible.value = false
   showToast('❌', `已拒绝 ${applicant.name} 的申请`)
 }
-// 9
+
 function handleReview(applicant) {
   updateLocalStatus(applicant.userId, '复核中')
   drawerVisible.value = false

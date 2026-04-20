@@ -31,9 +31,14 @@ export const ALLAPPLIEDCOMPETITIONS = '/index/allAppliedCompetitions';
 export const MEMBER_MESSAGE_URL = '/message/memberMessage';
 export const UADMITTED_MEMBERS_URL = '/message/unadmittedMembers';
 export const READ_URL = '/message/read';
-export const CREATE_MESSAGE_URL = '/message/createMessage'
+export const CREATE_MESSAGE_URL = '/message/createMessage';
 
 // 用户画像相关
 export const PROFILE_CARD_URL = '/user/profile/competence-card';
 export const PROFILE_SKILL_TAGS_URL = '/user/profile/skill-tags';
 export const PROFILE_APPLY_TEXT_URL = '/user/profile/apply-text-analysis';
+
+// 4.5 队伍诊断
+// 对应后端 TeamDiagnosisController: POST /api/diagnosis/team
+// 请求体: { competitionId: number }
+export const TEAM_DIAGNOSE_URL = '/api/diagnosis/team';

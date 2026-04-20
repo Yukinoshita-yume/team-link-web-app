@@ -17,7 +17,9 @@ import {
   PROFILE_CARD_URL,
   PROFILE_SKILL_TAGS_URL,
   PROFILE_APPLY_TEXT_URL,
+  TEAM_DIAGNOSE_URL,
 } from "./config";
+
 
 const api = axios.create({
   baseURL: BASE_URL,
@@ -27,25 +29,25 @@ const api = axios.create({
 });
 
 api.interceptors.request.use(
-  async (config) => {
-    const token = getToken();
-    if (token) {
-      config.headers.Authorization = token;
-    }
-    return config;
-  },
-  (error) => {
-    return Promise.reject(error);
-  },
+    async (config) => {
+      const token = getToken();
+      if (token) {
+        config.headers.Authorization = token;
+      }
+      return config;
+    },
+    (error) => {
+      return Promise.reject(error);
+    },
 );
 
 api.interceptors.response.use(
-  (response) => {
-    return response.data;
-  },
-  (error) => {
-    return Promise.reject(error);
-  },
+    (response) => {
+      return response.data;
+    },
+    (error) => {
+      return Promise.reject(error);
+    },
 );
 
 export async function selectPageApi(page, pageSize, content) {
@@ -107,10 +109,10 @@ export async function registerApi(userName, userPassword, userEmail, code) {
   }
 }
 export async function changePasswordApi(
-  userEmail,
-  newPassword,
-  confirmPassword,
-  code,
+    userEmail,
+    newPassword,
+    confirmPassword,
+    code,
 ) {
   try {
     const response = await api.put(url.CHANGE_PASSWORD_URL, {
@@ -335,6 +337,18 @@ export async function saveCompetenceCardApi(card) {
 export async function updateSkillTagsApi(skillTags) {
   try {
     const response = await api.put(PROFILE_SKILL_TAGS_URL, { skillTags });
+    return response;
+  } catch (error) {
+    throw error;
+  }
+}
+
+// 4.5 队伍诊断 API
+// 对接后端 POST /api/diagnosis/team，请求体 { competitionId }
+// 返回 TeamDiagnosisReport（含 skillGap / timeConflict / experienceRole / aiSuggestion）
+export async function diagnoseTeamApi(competitionId) {
+  try {
+    const response = await api.post(TEAM_DIAGNOSE_URL, { competitionId });
     return response;
   } catch (error) {
     throw error;

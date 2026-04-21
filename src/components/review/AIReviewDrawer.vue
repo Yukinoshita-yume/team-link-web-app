@@ -81,9 +81,6 @@
 
         <!-- 底部操作 -->
         <div class="drawer-footer">
-          <button class="footer-btn btn-reject" @click="$emit('reject', applicant)">
-            拒绝
-          </button>
           <button class="footer-btn btn-approve" @click="$emit('approve', applicant)">
             通过
           </button>
@@ -108,7 +105,7 @@ const props = defineProps({
   },
 })
 
-defineEmits(['close', 'approve', 'reject', 'review'])
+defineEmits(['close', 'approve'])
 
 const scoreColor = computed(() => {
   if (!props.applicant) return '#aaa'
@@ -357,14 +354,4 @@ const scoreDesc = computed(() => {
   color: #fff;
 }
 
-.btn-reject {
-  background: #ef5350;
-  color: #fff;
-}
-
-.btn-review {
-  background: #f5f5f5;
-  color: #555;
-  border: 1px solid #e0e0e0;
-}
 </style>

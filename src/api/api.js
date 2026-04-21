@@ -18,6 +18,7 @@ import {
   PROFILE_SKILL_TAGS_URL,
   PROFILE_APPLY_TEXT_URL,
   TEAM_DIAGNOSE_URL,
+  APPLICATION_AI_REVIEW_URL,
 } from "./config";
 
 
@@ -349,6 +350,34 @@ export async function updateSkillTagsApi(skillTags) {
 export async function diagnoseTeamApi(competitionId) {
   try {
     const response = await api.post(TEAM_DIAGNOSE_URL, { competitionId });
+    return response;
+  } catch (error) {
+    throw error;
+  }
+}
+
+// 申请人 AI 初筛
+export async function aiReviewApplicationApi(competitionId, applicantUserId) {
+  try {
+    const response = await api.post(
+      `${APPLICATION_AI_REVIEW_URL}/${applicantUserId}/ai-review`,
+      null,
+      { params: { competitionId } },
+    );
+    return response;
+  } catch (error) {
+    throw error;
+  }
+}
+
+// 申请通过（加入队伍）
+export async function approveApplicationApi(competitionId, applicantUserId) {
+  try {
+    const response = await api.post(
+      `${APPLICATION_AI_REVIEW_URL}/${applicantUserId}/approve`,
+      null,
+      { params: { competitionId } },
+    );
     return response;
   } catch (error) {
     throw error;

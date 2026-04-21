@@ -81,7 +81,7 @@
 
         <!-- 底部操作 -->
         <div class="drawer-footer">
-          <button class="footer-btn btn-approve" @click="$emit('approve', applicant)">
+          <button class="footer-btn btn-approve" v-if="!applicant.status" @click="$emit('approve', applicant)">
             通过
           </button>
         </div>

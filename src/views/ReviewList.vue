@@ -108,9 +108,9 @@ const toast = ref({ show: false, msg: '', icon: '' })
 
 const filters = [
   { label: '全部', value: 'all' },
-  { label: '待审核', value: '待审核' },
-  { label: '已通过', value: '已通过' },
-  // { label: '已拒绝', value: '已拒绝' },
+  { label: '待审核', value: 0 },
+  { label: '已通过', value: 1 },
+  // { label: '已拒绝', value: 2 },
 ]
 
 const filteredApplicants = computed(() => {
@@ -118,8 +118,8 @@ const filteredApplicants = computed(() => {
   return applicants.value.filter(a => a.status === activeFilter.value)
 })
 
-const pendingCount = computed(() => applicants.value.filter(a => a.status === '待审核' || !a.status).length)
-const approvedCount = computed(() => applicants.value.filter(a => a.status === '已通过').length)
+const pendingCount = computed(() => applicants.value.filter(a => a.status === 0 || !a.status).length)
+const approvedCount = computed(() => applicants.value.filter(a => a.status === 1).length)
 
 const goBack = () => router.back()
 
@@ -134,11 +134,10 @@ async function loadApplicants() {
       applicants.value = res.data.map(item => ({
         userId: item.userId,
         name: item.userName || '未知用户',
-        age: item.userAge || '-',
         position: item.userMajor || '未填写',
         location: item.userUniversity || '未填写',
         score: item.aiScore || 0,
-        status: item.status || '待审核',
+        status: item.status || 0,
         highlights: item.aiHighlights || [],
         risks: item.aiRisks || [],
         interviewQuestions: item.aiInterviewQuestions || [],
@@ -159,7 +158,6 @@ async function openDrawer(applicant) {
   drawerApplicant.value = { ...applicant }
   try {
     const res = await aiReviewApplicationApi(competitionId.value, applicant.userId)
-    console.log('AI Review API response:', res)
     if (res.code === 0 && res.data) {
       const reviewed = {
         ...applicant,
@@ -192,7 +190,7 @@ async function handleApprove(applicant) {
   try {
     const res = await approveApplicationApi(competitionId.value, applicant.userId)
     if (res.code === 0) {
-      updateLocalStatus(applicant.userId, '已通过')
+      updateLocalStatus(applicant.userId, 1)
       drawerVisible.value = false
       showToast('✅', `已通过 ${applicant.name} 的申请`)
       return

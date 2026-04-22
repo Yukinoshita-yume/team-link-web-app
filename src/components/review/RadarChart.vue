@@ -112,7 +112,7 @@ function drawRadar() {
   ctx.textBaseline = 'middle'
   for (let i = 0; i < n; i++) {
     const angle = step * i - Math.PI / 2
-    const labelR = R + 18
+   const labelR = R + 28
     const x = cx + Math.cos(angle) * labelR
     const y = cy + Math.sin(angle) * labelR
     ctx.fillText(props.dimensions[i].name, x, y)

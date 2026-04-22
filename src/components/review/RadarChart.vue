@@ -107,7 +107,7 @@ function drawRadar() {
 
   // 轴标签
   ctx.fillStyle = '#666'
-  ctx.font = '11px sans-serif'
+  ctx.font = '600 13px -apple-system, BlinkMacSystemFont, PingFang SC, sans-serif'
   ctx.textAlign = 'center'
   ctx.textBaseline = 'middle'
   for (let i = 0; i < n; i++) {

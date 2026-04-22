@@ -26,7 +26,7 @@ const props = defineProps({
   },
 })
 
-const SIZE = 240
+const SIZE = 320
 const canvasRef = ref(null)
 const fillColor = '#5c6bc0'
 
@@ -36,7 +36,7 @@ function drawRadar() {
   const ctx = canvas.getContext('2d')
   const cx = SIZE / 2
   const cy = SIZE / 2
-  const R = SIZE / 2 - 28
+  const R = SIZE / 2 - 50
   const n = props.dimensions.length
   const step = (Math.PI * 2) / n
 
@@ -112,7 +112,7 @@ function drawRadar() {
   ctx.textBaseline = 'middle'
   for (let i = 0; i < n; i++) {
     const angle = step * i - Math.PI / 2
-   const labelR = R + 28
+   const labelR = R + 22
     const x = cx + Math.cos(angle) * labelR
     const y = cy + Math.sin(angle) * labelR
     ctx.fillText(props.dimensions[i].name, x, y)

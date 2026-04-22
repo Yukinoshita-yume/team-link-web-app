@@ -131,19 +131,10 @@
           :style="{ animationDelay: index * 0.08 + 's' }"
           @click="goToDetail(item.competitionId)"
         >
-          <div
-            class="card-left-bar"
-            :class="scoreBarClass(item.matchScore)"
-          ></div>
+          <div class="card-left-bar"></div>
           <div class="card-body">
             <div class="card-top">
               <div class="card-title">{{ item.title }}</div>
-              <div
-                class="score-badge"
-                :class="scoreBadgeClass(item.matchScore)"
-              >
-                {{ item.matchScore }}%
-              </div>
             </div>
             <div class="card-tags">
               <span
@@ -256,7 +247,6 @@ const search = async () => {
   try {
     const res = await aiSearchApi(query.value.trim());
     results.value = res.code === 0 ? res.data : [];
-    // 搜索完成后缓存结果和查询词
     sessionStorage.setItem('lastSearchQuery', query.value)
     sessionStorage.setItem('lastSearchResults', JSON.stringify(results.value))
   } catch (e) {
@@ -277,7 +267,6 @@ const goToDetail = (id) => {
 }
 
 onMounted(() => {
-  // 恢复上次搜索结果，不重新请求 API
   const lastQuery = sessionStorage.getItem('lastSearchQuery')
   const lastResults = sessionStorage.getItem('lastSearchResults')
   if (lastQuery && lastResults) {
@@ -288,7 +277,6 @@ onMounted(() => {
 })
 
 const goBack = () => {
-  // 返回时清除缓存
   sessionStorage.removeItem('lastSearchQuery')
   sessionStorage.removeItem('lastSearchResults')
   router.back()
@@ -299,10 +287,6 @@ const allTags = (item) =>
         t?.trim(),
     );
 const formatDate = (d) => (d ? d.split("T")[0].replace(/-/g, "/") : "");
-const scoreBarClass = (s) =>
-    s >= 80 ? "bar-high" : s >= 60 ? "bar-mid" : "bar-low";
-const scoreBadgeClass = (s) =>
-    s >= 80 ? "badge-high" : s >= 60 ? "badge-mid" : "badge-low";
 </script>
 
 <style scoped>
@@ -538,6 +522,12 @@ const scoreBadgeClass = (s) =>
   backdrop-filter: blur(16px);
   border-bottom: 1px solid rgba(0, 0, 0, 0.06);
   box-shadow: 0 2px 20px rgba(0, 0, 0, 0.04);
+}
+
+.card-left-bar {
+  width: 4px;
+  flex-shrink: 0;
+  background: linear-gradient(180deg, #b0a0f0, #8060d0);
 }
 
 #bar-search-wrap {
@@ -955,19 +945,18 @@ const scoreBadgeClass = (s) =>
 
 /* 3. 针对 Top Bar 内部返回按钮的特定微调 */
 .bar-back {
-  /* 如果顶部条高度较窄，可以稍微收紧一点 padding */
   padding: 6px 12px;
-  background: rgba(0, 0, 0, 0.03); /* 让它和背景有一点区分 */
+  background: rgba(0, 0, 0, 0.03);
 }
 
 /* 4. 搜索框包裹层微调 */
 #bar-search-wrap {
-  flex: 1; /* 占据剩余空间 */
-  max-width: 600px; /* 限制搜索框最大宽度 */
+  flex: 1;
+  max-width: 600px;
   display: flex;
   align-items: center;
   background: rgba(255, 255, 255, 0.9);
-  border: 1.5px solid rgba(139, 92, 246, 0.15); /* 使用你常用的紫色调 */
+  border: 1.5px solid rgba(139, 92, 246, 0.15);
   border-radius: 40px;
   overflow: hidden;
   transition: all 0.2s;

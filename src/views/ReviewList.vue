@@ -73,8 +73,6 @@
       :applicant="drawerApplicant"
       @close="drawerVisible = false"
       @approve="handleApprove"
-      @reject="handleReject"
-      @review="handleReview"
     />
 
     <!-- 操作反馈 Toast，与 PersonalPage 风格一致 -->
@@ -92,12 +90,12 @@ import { useRoute } from 'vue-router'
 import router from '@/router'
 import ApplicantCard from '@/components/review/ApplicantCard.vue'
 import AIReviewDrawer from '@/components/review/AIReviewDrawer.vue'
-import { unadmittedMembersApi } from '@/api/api'
+import { unadmittedMembersApi, aiReviewApplicationApi, approveApplicationApi } from '@/api/api'
 
 const route = useRoute()
 // ✅ 从路由参数获取竞赛 ID，每个竞赛审核页面独立
 const competitionId = computed(() => route.query.id)
-const competitionTitle = ref('加载中…')
+const competitionTitle = computed(() => route.query.title || '竞赛审核')
 
 const loading = ref(false)
 const applicants = ref([])
@@ -110,9 +108,9 @@ const toast = ref({ show: false, msg: '', icon: '' })
 
 const filters = [
   { label: '全部', value: 'all' },
-  { label: '待审核', value: '待审核' },
-  { label: '已通过', value: '已通过' },
-  // { label: '已拒绝', value: '已拒绝' },
+  { label: '待审核', value: 0 },
+  { label: '已通过', value: 1 },
+  // { label: '已拒绝', value: 2 },
 ]
 
 const filteredApplicants = computed(() => {
@@ -120,9 +118,8 @@ const filteredApplicants = computed(() => {
   return applicants.value.filter(a => a.status === activeFilter.value)
 })
 
-const pendingCount = computed(() => applicants.value.filter(a => a.status === '待审核' || !a.status).length)
-const approvedCount = computed(() => applicants.value.filter(a => a.status === '已通过').length)
-const rejectedCount = computed(() => applicants.value.filter(a => a.status === '已拒绝').length)
+const pendingCount = computed(() => applicants.value.filter(a => a.status === 0 || !a.status).length)
+const approvedCount = computed(() => applicants.value.filter(a => a.status === 1).length)
 
 const goBack = () => router.back()
 
@@ -137,17 +134,16 @@ async function loadApplicants() {
       applicants.value = res.data.map(item => ({
         userId: item.userId,
         name: item.userName || '未知用户',
-        age: item.userAge || '-',
         position: item.userMajor || '未填写',
         location: item.userUniversity || '未填写',
         score: item.aiScore || 0,
-        status: item.status || '待审核',
+        status: item.status || 0,
         highlights: item.aiHighlights || [],
         risks: item.aiRisks || [],
         interviewQuestions: item.aiInterviewQuestions || [],
         dimensions: item.aiDimensions || [],
       }))
-      competitionTitle.value = res.data[0]?.competitionTitle || `竞赛 #${competitionId.value}`
+      // competitionTitle.value = res.data[0]?.competitionTitle || `竞赛 #${competitionId.value}`
     }
   } catch (e) {
     console.error(e)
@@ -156,10 +152,28 @@ async function loadApplicants() {
   }
 }
 
-function openDrawer(applicant) {
-  drawerApplicant.value = applicant
-  drawerVisible.value = true
+async function openDrawer(applicant) {
   selectedId.value = applicant.userId
+  drawerVisible.value = true
+  drawerApplicant.value = { ...applicant }
+  try {
+    const res = await aiReviewApplicationApi(competitionId.value, applicant.userId)
+    if (res.code === 0 && res.data) {
+      const reviewed = {
+        ...applicant,
+        score: res.data.totalScore ?? applicant.score ?? 0,
+        highlights: res.data.highlights || [],
+        risks: res.data.risks || [],
+        interviewQuestions: res.data.interviewQuestions || [],
+        dimensions: res.data.dimensions || [],
+      }
+      drawerApplicant.value = reviewed
+      updateApplicant(reviewed)
+    }
+  } catch (e) {
+    console.error(e)
+    showToast('⚠️', 'AI 审核失败，已展示基础信息')
+  }
 }
 
 function toggleSelect(userId) {
@@ -171,28 +185,31 @@ function showToast(icon, msg) {
   setTimeout(() => { toast.value.show = false }, 2500)
 }
 
-// ✅ 审核操作：同意 / 拒绝 / 复核，与原消息页面逻辑一致
-function handleApprove(applicant) {
-  updateLocalStatus(applicant.userId, '已通过')
-  drawerVisible.value = false
-  showToast('✅', `已通过 ${applicant.name} 的申请`)
-}
-
-function handleReject(applicant) {
-  updateLocalStatus(applicant.userId, '已拒绝')
-  drawerVisible.value = false
-  showToast('❌', `已拒绝 ${applicant.name} 的申请`)
-}
-
-function handleReview(applicant) {
-  updateLocalStatus(applicant.userId, '复核中')
-  drawerVisible.value = false
-  showToast('🔍', `${applicant.name} 已标记为复核中`)
+// 审核状态简化：仅“待审核 -> 已通过”
+async function handleApprove(applicant) {
+  try {
+    const res = await approveApplicationApi(competitionId.value, applicant.userId)
+    if (res.code === 0) {
+      updateLocalStatus(applicant.userId, 1)
+      drawerVisible.value = false
+      showToast('✅', `已通过 ${applicant.name} 的申请`)
+      return
+    }
+    showToast('⚠️', res.msg || '操作失败')
+  } catch (e) {
+    console.error(e)
+    showToast('⚠️', '通过操作失败，请稍后重试')
+  }
 }
 
 function updateLocalStatus(userId, status) {
   const idx = applicants.value.findIndex(a => a.userId === userId)
   if (idx !== -1) applicants.value[idx] = { ...applicants.value[idx], status }
+}
+
+function updateApplicant(applicant) {
+  const idx = applicants.value.findIndex(a => a.userId === applicant.userId)
+  if (idx !== -1) applicants.value[idx] = { ...applicant }
 }
 
 onMounted(() => {

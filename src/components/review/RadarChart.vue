@@ -26,7 +26,7 @@ const props = defineProps({
   },
 })
 
-const SIZE = 240
+const SIZE = 320
 const canvasRef = ref(null)
 const fillColor = '#5c6bc0'
 
@@ -34,9 +34,15 @@ function drawRadar() {
   const canvas = canvasRef.value
   if (!canvas || !props.dimensions.length) return
   const ctx = canvas.getContext('2d')
+  const dpr = window.devicePixelRatio || 1
+  canvas.width = SIZE * dpr
+  canvas.height = SIZE * dpr
+  canvas.style.width = SIZE + 'px'
+  canvas.style.height = SIZE + 'px'
+  ctx.scale(dpr, dpr)
   const cx = SIZE / 2
   const cy = SIZE / 2
-  const R = SIZE / 2 - 28
+  const R = SIZE / 2 - 50
   const n = props.dimensions.length
   const step = (Math.PI * 2) / n
 
@@ -107,12 +113,12 @@ function drawRadar() {
 
   // 轴标签
   ctx.fillStyle = '#666'
-  ctx.font = '11px sans-serif'
+  ctx.font = '600 13px -apple-system, BlinkMacSystemFont, PingFang SC, sans-serif'
   ctx.textAlign = 'center'
   ctx.textBaseline = 'middle'
   for (let i = 0; i < n; i++) {
     const angle = step * i - Math.PI / 2
-    const labelR = R + 18
+   const labelR = R + 22
     const x = cx + Math.cos(angle) * labelR
     const y = cy + Math.sin(angle) * labelR
     ctx.fillText(props.dimensions[i].name, x, y)

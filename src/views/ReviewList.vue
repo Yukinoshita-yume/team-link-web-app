@@ -95,7 +95,7 @@ import { unadmittedMembersApi, aiReviewApplicationApi, approveApplicationApi } f
 const route = useRoute()
 // ✅ 从路由参数获取竞赛 ID，每个竞赛审核页面独立
 const competitionId = computed(() => route.query.id)
-const competitionTitle = ref('加载中…')
+const competitionTitle = computed(() => route.query.title || '竞赛审核')
 
 const loading = ref(false)
 const applicants = ref([])
@@ -143,7 +143,7 @@ async function loadApplicants() {
         interviewQuestions: item.aiInterviewQuestions || [],
         dimensions: item.aiDimensions || [],
       }))
-      competitionTitle.value = res.data[0]?.competitionTitle || `竞赛 #${competitionId.value}`
+      // competitionTitle.value = res.data[0]?.competitionTitle || `竞赛 #${competitionId.value}`
     }
   } catch (e) {
     console.error(e)

@@ -34,6 +34,12 @@ function drawRadar() {
   const canvas = canvasRef.value
   if (!canvas || !props.dimensions.length) return
   const ctx = canvas.getContext('2d')
+  const dpr = window.devicePixelRatio || 1
+  canvas.width = SIZE * dpr
+  canvas.height = SIZE * dpr
+  canvas.style.width = SIZE + 'px'
+  canvas.style.height = SIZE + 'px'
+  ctx.scale(dpr, dpr)
   const cx = SIZE / 2
   const cy = SIZE / 2
   const R = SIZE / 2 - 50

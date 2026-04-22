@@ -38,6 +38,9 @@ export const PROFILE_CARD_URL = '/user/profile/competence-card';
 export const PROFILE_SKILL_TAGS_URL = '/user/profile/skill-tags';
 export const PROFILE_APPLY_TEXT_URL = '/user/profile/apply-text-analysis';
 
+// 报名审核相关
+export const APPLICATION_AI_REVIEW_URL = '/api/applications';
+
 // 4.5 队伍诊断
 // 对应后端 TeamDiagnosisController: POST /api/diagnosis/team
 // 请求体: { competitionId: number }

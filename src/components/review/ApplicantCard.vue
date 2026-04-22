@@ -21,7 +21,7 @@
       <div class="name-block">
         <span class="name">{{ applicant.name }}</span>
         <span class="tag" :style="{ background: statusTagStyle.bg, color: statusTagStyle.color }">
-          {{ applicant.status || '待审核' }}
+          {{ applicant.status === 1 ? '已通过' : '待审核' }}
         </span>
       </div>
     </div>

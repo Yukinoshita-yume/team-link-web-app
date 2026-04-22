@@ -109,7 +109,7 @@
                 <button class="item-btn btn-manage" @click.stop="toCompetitionDetail(p.competitionId)">
                   管理
                 </button>
-                <button class="item-btn btn-review" @click.stop="toReview(p.competitionId)">
+                <button class="item-btn btn-review" @click.stop="toReview(p.competitionId, p.title)">
                   审核
                 </button>
               </div>
@@ -219,7 +219,7 @@ const handleCreateProject = () => router.push('/create-project')
 const toCompetitionDetail = (id) => router.push({ path: '/project-detail', query: { id } })
 
 // ✅ 新增：跳转到该竞赛的独立审核页面
-const toReview = (id) => router.push({ path: '/review', query: { id } })
+const toReview = (id, title) => router.push({ path: '/review', query: { id, title } })
 const goToMessagePage = () => router.push('/message-page')
 
 // ❌ 已移除：goToMessagePage / goToMessagePage2（原消息审核入口）

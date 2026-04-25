@@ -44,7 +44,6 @@
           <div class="score-left">
             <div class="score-label">队伍综合评分</div>
             <div class="score-number" :class="scoreClass">{{ report.totalScore }}</div>
-            <div class="score-desc">满分 100 分 · 耗时 {{ report.latencyMs }}ms</div>
           </div>
           <div class="score-right">
             <div class="risk-badge" :class="riskClass">

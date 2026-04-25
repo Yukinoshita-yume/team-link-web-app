@@ -344,9 +344,7 @@ export async function updateSkillTagsApi(skillTags) {
   }
 }
 
-// 4.5 队伍诊断 API
-// 对接后端 POST /api/diagnosis/team，请求体 { competitionId }
-// 返回 TeamDiagnosisReport（含 skillGap / timeConflict / experienceRole / aiSuggestion）
+// 队伍诊断 API
 export async function diagnoseTeamApi(competitionId) {
   try {
     const response = await api.post(TEAM_DIAGNOSE_URL, { competitionId });

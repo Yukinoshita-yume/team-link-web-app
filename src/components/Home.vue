@@ -10,7 +10,7 @@
       <div class="nav-row1">
         <div class="nav-logo">
           <div class="logo-icon">🏆</div>
-          <span class="logo-text">TEAMLINK+</span>
+          <span class="logo-text">COMPETEHUB</span>
         </div>
 
         <div class="nav-center">
@@ -167,7 +167,7 @@
       </div>
     </div>
 
-    <footer class="footer">TeamLink+ · 让每一次挑战都有意义 🏆</footer>
+    <footer class="footer">CompeteHub · 让每一次挑战都有意义 🏆</footer>
   </div>
 </template>
 

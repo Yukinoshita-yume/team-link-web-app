@@ -124,6 +124,12 @@
             <div class="banner-desc">在消息页面审核成员申请，管理队伍成员</div>
           </div>
         </div>
+        <button class="action-btn btn-diagnose" @click="handleDiagnose">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+            <path d="M9 3H5a2 2 0 0 0-2 2v4m6-6h10a2 2 0 0 1 2 2v4M9 3v18m0 0h10a2 2 0 0 0 2-2v-4M9 21H5a2 2 0 0 1-2-2v-4m0 0h18"/>
+          </svg>
+          AI 诊断队伍
+        </button>
         <button class="action-btn btn-ghost-danger" @click="handleDelete">
           解散队伍
         </button>
@@ -180,7 +186,8 @@
 import { ref, computed, onMounted, inject } from 'vue'
 import {
   competitionDetailApi, applyCompetitionApi, checkApplicationApi,
-  cancelRegistrationApi, creatorApi, createMessageApi, deleteCompetitioinApi
+  cancelRegistrationApi, creatorApi, createMessageApi, deleteCompetitioinApi,
+  diagnoseTeamApi
 } from '@/api/api'
 import { getRandomColor, getInitials } from '@/utils/auth'
 import { useRoute } from 'vue-router'
@@ -337,6 +344,11 @@ const removeMember = async (index) => {
 const handleDelete = async () => {
   const ok = await confirmDialog({ title: '解散队伍', message: '解散后所有成员将被移除，此操作无法恢复。', confirmText: '确认解散', cancelText: '再想想' })
   if (ok) deleteCompetitioin()
+}
+
+// 4.6 跳转到队伍诊断报告页面
+const handleDiagnose = () => {
+  router.push({ path: '/team-diagnose', query: { competitionId: competitionId.value } })
 }
 
 const handleExit = () => window.history.length > 1 ? window.history.back() : window.close()
@@ -571,6 +583,14 @@ const handleExit = () => window.history.length > 1 ? window.history.back() : win
   color: #dc2626;
 }
 .btn-ghost-danger:hover { background: rgba(239,68,68,0.05); }
+
+.btn-diagnose {
+  background: linear-gradient(135deg, rgba(99,102,241,0.1), rgba(139,92,246,0.1));
+  border: 1.5px solid rgba(139,92,246,0.25);
+  color: #7c3aed;
+  margin-bottom: 10px;
+}
+.btn-diagnose:hover { background: rgba(139,92,246,0.15); border-color: rgba(139,92,246,0.4); }
 
 /* 信息卡片 */
 .info-card { padding: 20px 22px; }

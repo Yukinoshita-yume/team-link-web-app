@@ -9,6 +9,8 @@ import ProjectDetail from "@/components/ProjectDetail.vue";
 import MessagePage from "@/components/MessagePage.vue";
 import MessagePage2 from "@/components/MessagePage2.vue";
 import userPage from "@/components/userPage.vue";
+import ChatPage from "@/components/ChatPage.vue";
+import DmPage from "@/components/DmPage.vue";
 import SearchPage from "@/components/SearchPage.vue";
 import ReviewList from "@/views/ReviewList.vue";
 import TeamDiagnosePage from "@/components/TeamDiagnosePage.vue";
@@ -24,6 +26,8 @@ const routes = [
   { path: "/message-page", component: MessagePage },
   { path: "/message-page2", component: MessagePage2 },
   { path: "/user-page", component: userPage },
+  { path: "/chat", component: ChatPage },
+  { path: "/dm-page", component: DmPage },
   {
     path: "/project-detail",
     component: ProjectDetail,
@@ -31,7 +35,6 @@ const routes = [
   },
   { path: "/search", component: SearchPage },
   { path: "/review", component: ReviewList },
-
   {
     path: "/team-diagnose",
     component: TeamDiagnosePage,

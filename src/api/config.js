@@ -26,12 +26,21 @@ export const SELECTPAGE_URL = '/index/selectPage';
 export const ALLMEMBERS_URL = '/index/allMembers';
 export const ALLCREATEDCOMPETITIONS = '/index/allCreatedCompetitions';
 export const ALLAPPLIEDCOMPETITIONS = '/index/allAppliedCompetitions';
+export const ALLREGISTEREDCOMPETITIONS = '/index/allRegisteredCompetitions';
+export const NOTIFICATION_COUNTS_URL = '/index/notificationCounts';
+export const MARK_REVIEWED_URL = '/index/markReviewed';
 
 // 消息相关
 export const MEMBER_MESSAGE_URL = '/message/memberMessage';
 export const UADMITTED_MEMBERS_URL = '/message/unadmittedMembers';
 export const READ_URL = '/message/read';
 export const CREATE_MESSAGE_URL = '/message/createMessage';
+
+// 私信相关
+export const DIRECT_SEND_URL        = '/message/direct/send';
+export const DIRECT_CONVERSATION_URL = '/message/direct/conversation';
+export const DIRECT_SESSIONS_URL    = '/message/direct/sessions';
+export const DIRECT_UNREAD_URL      = '/message/direct/unreadCount';
 
 // 用户画像相关
 export const PROFILE_CARD_URL = '/user/profile/competence-card';

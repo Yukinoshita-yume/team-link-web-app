@@ -13,6 +13,15 @@
         <div class="avatar"></div>
         <h1 class="name">{{ user.userName }}</h1>
         <div class="gender-badge">{{ genderMap(user.userGender) }}</div>
+        <!-- 发私信按钮（不显示给自己） -->
+        <button
+          v-if="myUserId !== -1 && String(myUserId) !== String(targetUserId)"
+          class="dm-btn"
+          @click="openChat"
+        >
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+          发私信
+        </button>
       </div>
       <div class="info-card">
         <div class="card-title"><div class="title-bar"></div>基本信息</div>
@@ -53,20 +62,24 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, computed } from 'vue'
 import { userInfoByIdApi } from '@/api/api'
 import { useRoute } from 'vue-router'
+import { useStore } from 'vuex'
 import router from '@/router'
 
 const route = useRoute()
-const userId = ref(route.query.id || '')
+const store = useStore()
+const targetUserId = ref(route.query.id || '')
+const myUserId = computed(() => store.state.user.userId)
 const user = ref({ userName: '', userEmail: '', userGender: '', userUniversity: '', userMajor: '', userInformation: '' })
 const genderMap = (g) => ({ female: '女', male: '男', unknown: '其他' }[g] || '其他')
 const handleExit = () => router.back()
+const openChat = () => router.push({ path: '/chat', query: { userId: targetUserId.value, userName: user.value.userName } })
 
 async function userInfoById() {
   try {
-    const res = await userInfoByIdApi({ userId: userId.value })
+    const res = await userInfoByIdApi({ userId: targetUserId.value })
     if (res.code === 0) user.value = res.data
   } catch (e) { console.error(e) }
 }
@@ -104,6 +117,8 @@ onMounted(() => userInfoById())
 .avatar { width: 80px; height: 80px; border-radius: 50%; background-image: url(../assets/user.svg); background-size: 80%; background-repeat: no-repeat; background-position: center; background-color: rgba(139,92,246,0.08); border: 3px solid rgba(139,92,246,0.2); margin-bottom: 12px; }
 .name { font-size: 24px; font-weight: 800; color: #1a1028; margin-bottom: 8px; }
 .gender-badge { padding: 4px 14px; background: rgba(139,92,246,0.1); color: #7c3aed; border-radius: 20px; font-size: 13px; font-weight: 500; }
+.dm-btn { margin-top: 12px; display: flex; align-items: center; gap: 6px; padding: 8px 20px; background: linear-gradient(135deg, #8b5cf6, #7c3aed); color: white; border: none; border-radius: 20px; font-size: 13px; font-weight: 600; cursor: pointer; box-shadow: 0 3px 12px rgba(124,58,237,0.28); transition: all 0.2s; }
+.dm-btn:hover { transform: translateY(-1px); box-shadow: 0 5px 18px rgba(124,58,237,0.35); }
 .info-card { background: rgba(255,255,255,0.78); border: 1px solid rgba(255,255,255,0.9); border-radius: 18px; padding: 20px; backdrop-filter: blur(12px); box-shadow: 0 2px 16px rgba(100,80,200,0.06); }
 .card-title { display: flex; align-items: center; gap: 10px; font-size: 14px; font-weight: 700; color: #333; margin-bottom: 14px; }
 .title-bar { width: 3px; height: 16px; background: linear-gradient(180deg, #8b5cf6, #6d28d9); border-radius: 2px; flex-shrink: 0; }

@@ -19,11 +19,41 @@
     </nav>
 
     <div class="content">
+
       <!-- 头像区 -->
       <div class="avatar-section">
         <div class="avatar"></div>
         <div class="avatar-name">{{ user.userName || '未设置用户名' }}</div>
         <div class="avatar-sub">{{ user.userEmail }}</div>
+      </div>
+
+      <!-- ★ 快捷入口栏：系统通知 + 私信 -->
+      <div class="shortcut-bar">
+        <button class="shortcut-card sc-notify" @click="goToMessagePage">
+          <div class="sc-icon-wrap sc-icon-purple">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+          </div>
+          <div class="sc-text">
+            <span class="sc-label">系统通知</span>
+            <span class="sc-sub" v-if="unreadMessageCount > 0">{{ unreadMessageCount }} 条未读</span>
+            <span class="sc-sub sc-sub-empty" v-else>暂无新通知</span>
+          </div>
+          <span v-if="unreadMessageCount > 0" class="sc-badge">{{ unreadMessageCount > 99 ? '99+' : unreadMessageCount }}</span>
+          <svg class="sc-arrow" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"/></svg>
+        </button>
+
+        <button class="shortcut-card sc-dm" @click="goToDmPage">
+          <div class="sc-icon-wrap sc-icon-blue">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+          </div>
+          <div class="sc-text">
+            <span class="sc-label">私信</span>
+            <span class="sc-sub" v-if="unreadDirectCount > 0">{{ unreadDirectCount }} 条未读</span>
+            <span class="sc-sub sc-sub-empty" v-else>暂无新私信</span>
+          </div>
+          <span v-if="unreadDirectCount > 0" class="sc-badge sc-badge-blue">{{ unreadDirectCount > 99 ? '99+' : unreadDirectCount }}</span>
+          <svg class="sc-arrow" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"/></svg>
+        </button>
       </div>
 
       <!-- 个人信息卡片 -->
@@ -57,18 +87,35 @@
         </div>
       </div>
 
-      <!-- 竞赛信息 -->
+      <!-- 竞赛信息三栏 -->
       <div class="competitions-grid">
-        <!-- 我报名的 -->
+
+        <!-- ① 我报名的项目（待审核，admission_status=0） -->
         <div class="card">
-  <div class="card-title">
-    <div class="title-bar bar-amber"></div>
-    我报名的项目
-    <button class="msg-btn" @click="goToMessagePage">
-      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
-      消息
-    </button>
-  </div>
+          <div class="card-title">
+            <div class="title-bar bar-orange"></div>
+            我报名的项目
+          </div>
+          <div class="project-list">
+            <div
+              class="project-item"
+              v-for="p in registeredProjects"
+              :key="p.competitionId"
+              @click="toCompetitionDetail(p.competitionId)"
+            >
+              <span class="project-name">{{ p.title }}</span>
+              <span class="status-chip chip-pending">待审核</span>
+            </div>
+            <div class="empty-list" v-if="registeredProjects.length === 0">暂无报名项目</div>
+          </div>
+        </div>
+
+        <!-- ② 我参与的项目（已录取，admission_status=1） -->
+        <div class="card">
+          <div class="card-title">
+            <div class="title-bar bar-amber"></div>
+            我参与的项目
+          </div>
           <div class="project-list">
             <div
               class="project-item"
@@ -79,16 +126,15 @@
               <span class="project-name">{{ p.title }}</span>
               <span class="project-action">查看 ›</span>
             </div>
-            <div class="empty-list" v-if="appliedProjects.length === 0">暂无报名项目</div>
+            <div class="empty-list" v-if="appliedProjects.length === 0">暂无参与项目</div>
           </div>
         </div>
 
-        <!-- 我创办的 -->
+        <!-- ③ 我创办的项目 -->
         <div class="card">
           <div class="card-title">
             <div class="title-bar"></div>
             我创办的项目
-            <!-- ✅ 保留「创办」按钮，❌ 已移除「消息」按钮 -->
             <div class="title-actions">
               <button class="msg-btn btn-green" @click="handleCreateProject">
                 <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
@@ -97,26 +143,26 @@
             </div>
           </div>
           <div class="project-list">
-            <!-- ✅ 每个竞赛项新增「管理」「审核」按钮，替代原来的整行点击跳转 -->
             <div
               class="project-item"
               v-for="p in createdProjects"
               :key="p.competitionId"
             >
               <span class="project-name">{{ p.title }}</span>
-              <!-- ✅ 新增：竞赛操作按钮组 -->
               <div class="item-actions">
                 <button class="item-btn btn-manage" @click.stop="toCompetitionDetail(p.competitionId)">
                   管理
                 </button>
-                <button class="item-btn btn-review" @click.stop="toReview(p.competitionId, p.title)">
+                <button class="item-btn btn-review badge-wrap" @click.stop="toReview(p.competitionId, p.title)">
                   审核
+                  <span v-if="pendingReviewCount > 0" class="badge badge-sm">{{ pendingReviewCount > 99 ? '99+' : pendingReviewCount }}</span>
                 </button>
               </div>
             </div>
             <div class="empty-list" v-if="createdProjects.length === 0">暂无创办项目</div>
           </div>
         </div>
+
       </div>
 
       <!-- 能力卡片 -->
@@ -128,17 +174,9 @@
             综合 {{ competenceCard.totalScore }} 分
           </span>
         </div>
-
         <div class="tags-row">
-          <div
-            class="tag"
-            v-for="tag in competenceCard.skillTags"
-            :key="tag"
-          >
-            {{ tag }}
-          </div>
+          <div class="tag" v-for="tag in competenceCard.skillTags" :key="tag">{{ tag }}</div>
         </div>
-
         <div class="radar-list">
           <div class="radar-item" v-for="item in radarItems" :key="item.key">
             <span class="radar-label">{{ item.label }}</span>
@@ -149,6 +187,7 @@
           </div>
         </div>
       </div>
+
     </div>
 
     <!-- 保存成功 Toast -->
@@ -167,7 +206,10 @@ import {
   updateApi,
   allAppliedCompetitionsApi,
   allCreatedCompetitionsApi,
+  allRegisteredCompetitionsApi,
+  notificationCountsApi,
   getCompetenceCardApi,
+  getUnreadDirectCountApi,
 } from '@/api/api'
 import router from '@/router'
 
@@ -176,33 +218,32 @@ const localUser = computed(() => store.state.user)
 const user = ref({ ...localUser.value })
 const saving = ref(false)
 const saveToast = ref(false)
+
+// 三栏数据
+const registeredProjects = ref([])
 const appliedProjects = ref([])
 const createdProjects = ref([])
 
+// 徽章数量
+const unreadMessageCount = ref(0)   // 系统通知未读
+const pendingReviewCount = ref(0)   // 待审核报名
+const unreadDirectCount  = ref(0)   // 私信未读
+
 const competenceCard = ref({
   skillTags: [],
-  radarScores: {
-    technicalDepth: 0,
-    competitionExperience: 0,
-    teamwork: 0,
-    learningAbility: 0,
-    timeCommitment: 0
-  },
+  radarScores: { technicalDepth: 0, competitionExperience: 0, teamwork: 0, learningAbility: 0, timeCommitment: 0 },
   totalScore: null,
-  expertiseAreas: [],
-  availabilityHeatmap: {},
-  llmSnapshot: ''
 })
 const loadingProfile = ref(false)
 
 const radarItems = computed(() => {
   const r = competenceCard.value.radarScores || {}
   return [
-    { key: 'technicalDepth', label: '技术深度', value: r.technicalDepth },
+    { key: 'technicalDepth',        label: '技术深度', value: r.technicalDepth },
     { key: 'competitionExperience', label: '竞赛经验', value: r.competitionExperience },
-    { key: 'teamwork', label: '团队协作', value: r.teamwork },
-    { key: 'learningAbility', label: '学习能力', value: r.learningAbility },
-    { key: 'timeCommitment', label: '时间投入', value: r.timeCommitment }
+    { key: 'teamwork',              label: '团队协作', value: r.teamwork },
+    { key: 'learningAbility',       label: '学习能力', value: r.learningAbility },
+    { key: 'timeCommitment',        label: '时间投入', value: r.timeCommitment },
   ]
 })
 
@@ -210,43 +251,63 @@ const saveUserInfo = async () => {
   saving.value = true
   try {
     const res = await updateApi(user.value)
-    if (res.code === 0) { store.dispatch('saveUserInfo', user.value); saveToast.value = true; setTimeout(() => saveToast.value = false, 2500) }
+    if (res.code === 0) {
+      store.dispatch('saveUserInfo', user.value)
+      saveToast.value = true
+      setTimeout(() => saveToast.value = false, 2500)
+    }
   } catch (e) { console.error(e) }
   finally { saving.value = false }
 }
-const handleLogout = () => router.push('/home')
-const handleCreateProject = () => router.push('/create-project')
-const toCompetitionDetail = (id) => router.push({ path: '/project-detail', query: { id } })
 
-// ✅ 新增：跳转到该竞赛的独立审核页面
-const toReview = (id, title) => router.push({ path: '/review', query: { id, title } })
-const goToMessagePage = () => router.push('/message-page')
+const handleLogout          = () => router.push('/home')
+const handleCreateProject   = () => router.push('/create-project')
+const toCompetitionDetail   = (id) => router.push({ path: '/project-detail', query: { id } })
+const toReview              = (id, title) => router.push({ path: '/review', query: { id, title } })
+const goToMessagePage       = () => router.push('/message-page')
+const goToDmPage            = () => router.push('/dm-page')
 
-// ❌ 已移除：goToMessagePage / goToMessagePage2（原消息审核入口）
-
-async function allAppliedCompetitions() {
-  try { const res = await allAppliedCompetitionsApi({ userId: localUser.value.userId }); if (res.code === 0) appliedProjects.value = res.data } catch (e) { console.error(e) }
+async function loadRegisteredCompetitions() {
+  try { const r = await allRegisteredCompetitionsApi({ userId: localUser.value.userId }); if (r.code === 0) registeredProjects.value = r.data } catch (e) { console.error(e) }
 }
-async function allCreatedCompetitions() {
-  try { const res = await allCreatedCompetitionsApi({ userId: localUser.value.userId }); if (res.code === 0) createdProjects.value = res.data } catch (e) { console.error(e) }
+async function loadAppliedCompetitions() {
+  try { const r = await allAppliedCompetitionsApi({ userId: localUser.value.userId }); if (r.code === 0) appliedProjects.value = r.data } catch (e) { console.error(e) }
+}
+async function loadCreatedCompetitions() {
+  try { const r = await allCreatedCompetitionsApi({ userId: localUser.value.userId }); if (r.code === 0) createdProjects.value = r.data } catch (e) { console.error(e) }
+}
+async function loadNotificationCounts() {
+  try {
+    const r = await notificationCountsApi({ userId: localUser.value.userId })
+    if (r.code === 0 && r.data) {
+      unreadMessageCount.value = r.data.unreadMessage || 0
+      pendingReviewCount.value  = r.data.pendingReview  || 0
+    }
+  } catch (e) { console.error(e) }
+}
+async function loadUnreadDirect() {
+  try {
+    const r = await getUnreadDirectCountApi({ userId: localUser.value.userId })
+    if (r.code === 0) unreadDirectCount.value = r.data || 0
+  } catch (e) { console.error(e) }
 }
 async function loadCompetenceCard() {
   try {
     loadingProfile.value = true
-    const res = await getCompetenceCardApi()
-    if (res.code === 0 && res.data) {
-      competenceCard.value = res.data
-    }
-  } catch (e) {
-    console.error(e)
-  } finally {
-    loadingProfile.value = false
-  }
+    const r = await getCompetenceCardApi()
+    if (r.code === 0 && r.data) competenceCard.value = r.data
+  } catch (e) { console.error(e) }
+  finally { loadingProfile.value = false }
 }
 
 onMounted(() => {
   if (localUser.value.userId === -1) { router.replace('/login'); return }
-  allAppliedCompetitions(); allCreatedCompetitions(); loadCompetenceCard()
+  loadRegisteredCompetitions()
+  loadAppliedCompetitions()
+  loadCreatedCompetitions()
+  loadNotificationCounts()
+  loadUnreadDirect()
+  loadCompetenceCard()
 })
 </script>
 
@@ -257,6 +318,7 @@ onMounted(() => {
 .blob1 { width: 500px; height: 500px; background: rgba(167,139,250,0.15); top: -120px; right: -80px; }
 .blob2 { width: 400px; height: 400px; background: rgba(196,181,253,0.12); bottom: 0; left: -60px; }
 
+/* ── 导航 ── */
 .nav { position: sticky; top: 0; z-index: 50; display: flex; align-items: center; justify-content: space-between; padding: 14px 24px; background: rgba(255,255,255,0.85); backdrop-filter: blur(16px); border-bottom: 1px solid rgba(0,0,0,0.05); }
 .nav-title { position: absolute; left: 50%; transform: translateX(-50%); font-size: 22px; font-weight: 800; color: #1a1028; }
 .nav-actions { margin-left: auto; display: flex; gap: 10px; }
@@ -267,138 +329,132 @@ onMounted(() => {
 .btn-logout { background: rgba(239,68,68,0.08); color: #dc2626; border: 1px solid rgba(239,68,68,0.15); }
 .btn-logout:hover { background: rgba(239,68,68,0.12); }
 
-.content { position: relative; z-index: 1; max-width: 900px; margin: 0 auto; padding: 24px 16px 60px; display: flex; flex-direction: column; gap: 16px; }
+/* ── 内容区 ── */
+.content { position: relative; z-index: 1; max-width: 1100px; margin: 0 auto; padding: 24px 16px 60px; display: flex; flex-direction: column; gap: 16px; }
 
+/* ── 头像 ── */
 .avatar-section { display: flex; flex-direction: column; align-items: center; padding: 20px 0 8px; }
 .avatar { width: 72px; height: 72px; border-radius: 50%; background-image: url(../assets/user.svg); background-size: 80%; background-repeat: no-repeat; background-position: center; background-color: rgba(139,92,246,0.08); border: 3px solid rgba(139,92,246,0.18); margin-bottom: 10px; }
 .avatar-name { font-size: 20px; font-weight: 800; color: #1a1028; margin-bottom: 3px; }
 .avatar-sub { font-size: 13px; color: #aaa; }
 
+/* ── 快捷入口栏 ── */
+.shortcut-bar {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+.shortcut-card {
+  display: flex; align-items: center; gap: 14px;
+  padding: 16px 18px;
+  background: rgba(255,255,255,0.82);
+  border: 1px solid rgba(255,255,255,0.9);
+  border-radius: 18px;
+  backdrop-filter: blur(12px);
+  box-shadow: 0 2px 16px rgba(100,80,200,0.06);
+  cursor: pointer;
+  transition: all 0.22s;
+  position: relative;
+  text-align: left;
+}
+.shortcut-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 24px rgba(100,80,200,0.1);
+}
+.sc-icon-wrap {
+  width: 44px; height: 44px; border-radius: 14px; flex-shrink: 0;
+  display: flex; align-items: center; justify-content: center;
+}
+.sc-icon-purple { background: linear-gradient(135deg, #ede9fe, #ddd6fe); color: #7c3aed; }
+.sc-icon-blue   { background: linear-gradient(135deg, #dbeafe, #bfdbfe); color: #2563eb; }
+.sc-text { flex: 1; display: flex; flex-direction: column; gap: 3px; min-width: 0; }
+.sc-label { font-size: 15px; font-weight: 700; color: #1a1028; }
+.sc-sub { font-size: 12px; color: #8b5cf6; font-weight: 500; }
+.sc-sub-empty { color: #ccc; font-weight: 400; }
+.sc-dm .sc-sub { color: #2563eb; }
+.sc-badge {
+  flex-shrink: 0;
+  min-width: 22px; height: 22px;
+  background: #ef4444; color: white;
+  border-radius: 999px; font-size: 11px; font-weight: 700;
+  display: flex; align-items: center; justify-content: center;
+  padding: 0 5px;
+  animation: badge-pop 0.3s cubic-bezier(0.34,1.56,0.64,1);
+}
+.sc-badge-blue { background: #3b82f6; }
+.sc-arrow { color: #ccc; flex-shrink: 0; }
+.shortcut-card:hover .sc-arrow { color: #8b5cf6; }
+.sc-dm:hover .sc-arrow { color: #2563eb; }
+
+/* ── 卡片 ── */
 .card { background: rgba(255,255,255,0.78); border: 1px solid rgba(255,255,255,0.9); border-radius: 20px; padding: 20px; backdrop-filter: blur(12px); box-shadow: 0 2px 16px rgba(100,80,200,0.06); }
 .card-title { display: flex; align-items: center; gap: 10px; font-size: 15px; font-weight: 700; color: #222; margin-bottom: 16px; }
 .title-bar { width: 3px; height: 16px; background: linear-gradient(180deg, #8b5cf6, #6d28d9); border-radius: 2px; flex-shrink: 0; }
-.bar-amber { background: linear-gradient(180deg, #f59e0b, #d97706); }
+.bar-amber  { background: linear-gradient(180deg, #f59e0b, #d97706); }
+.bar-orange { background: linear-gradient(180deg, #f97316, #ea580c); }
 .title-actions { margin-left: auto; display: flex; gap: 8px; }
 
+/* ── 个人信息表单 ── */
 .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 14px; }
 .field { display: flex; flex-direction: column; gap: 6px; }
 .field.full { grid-column: 1/-1; }
 .field label { font-size: 12px; font-weight: 700; color: #888; text-transform: uppercase; letter-spacing: 0.04em; }
-.field input, .field select, .field textarea {
-  padding: 10px 13px; background: rgba(245,243,255,0.6);
-  border: 1.5px solid rgba(139,92,246,0.1); border-radius: 10px;
-  font-size: 14px; color: #333; outline: none; transition: all 0.2s; font-family: inherit;
-}
+.field input, .field select, .field textarea { padding: 10px 13px; background: rgba(245,243,255,0.6); border: 1.5px solid rgba(139,92,246,0.1); border-radius: 10px; font-size: 14px; color: #333; outline: none; transition: all 0.2s; font-family: inherit; }
 .field input:focus, .field select:focus, .field textarea:focus { border-color: rgba(139,92,246,0.4); background: white; box-shadow: 0 0 0 3px rgba(139,92,246,0.07); }
 .field textarea { min-height: 90px; resize: vertical; }
 
-.competitions-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+/* ── 三栏竞赛网格 ── */
+.competitions-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 14px; }
 
-.msg-btn { display: flex; align-items: center; gap: 5px; padding: 5px 12px; background: rgba(139,92,246,0.08); color: #7c3aed; border: 1px solid rgba(139,92,246,0.15); border-radius: 16px; font-size: 12px; font-weight: 600; cursor: pointer; margin-left: auto; transition: all 0.2s; }
+/* ── 小操作按钮 ── */
+.msg-btn { display: flex; align-items: center; gap: 5px; padding: 5px 12px; background: rgba(139,92,246,0.08); color: #7c3aed; border: 1px solid rgba(139,92,246,0.15); border-radius: 16px; font-size: 12px; font-weight: 600; cursor: pointer; margin-left: auto; transition: all 0.2s; position: relative; }
 .msg-btn:hover { background: rgba(139,92,246,0.14); }
 .btn-green { background: rgba(52,211,153,0.1); color: #059669; border-color: rgba(52,211,153,0.2); }
 .btn-green:hover { background: rgba(52,211,153,0.16); }
 
+/* ── 红点徽章 ── */
+.badge { position: absolute; top: -7px; right: -7px; min-width: 18px; height: 18px; background: #ef4444; color: white; border-radius: 999px; font-size: 10px; font-weight: 700; display: flex; align-items: center; justify-content: center; padding: 0 4px; border: 2px solid white; line-height: 1; animation: badge-pop 0.3s cubic-bezier(0.34,1.56,0.64,1); }
+.badge-sm { position: absolute; top: -6px; right: -6px; min-width: 16px; height: 16px; background: #ef4444; color: white; border-radius: 999px; font-size: 9px; font-weight: 700; display: flex; align-items: center; justify-content: center; padding: 0 3px; border: 2px solid white; line-height: 1; animation: badge-pop 0.3s cubic-bezier(0.34,1.56,0.64,1); }
+.badge-wrap { position: relative; }
+@keyframes badge-pop { 0% { transform: scale(0); opacity: 0; } 100% { transform: scale(1); opacity: 1; } }
+
+/* ── 项目列表 ── */
 .project-list { display: flex; flex-direction: column; gap: 2px; }
-.project-item { display: flex; align-items: center; justify-content: space-between; padding: 10px 12px; border-radius: 10px; transition: all 0.2s; }
+.project-item { display: flex; align-items: center; justify-content: space-between; padding: 10px 12px; border-radius: 10px; transition: all 0.2s; cursor: pointer; }
 .project-item:hover { background: rgba(139,92,246,0.05); }
 .project-name { font-size: 14px; color: #333; font-weight: 500; flex: 1; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
 .project-action { font-size: 13px; color: #aaa; flex-shrink: 0; margin-left: 8px; }
 .project-item:hover .project-action { color: #8b5cf6; }
 .empty-list { text-align: center; padding: 20px; font-size: 13px; color: #ccc; }
+.status-chip { flex-shrink: 0; margin-left: 8px; padding: 2px 8px; border-radius: 999px; font-size: 11px; font-weight: 600; }
+.chip-pending { background: rgba(249,115,22,0.1); color: #ea580c; border: 1px solid rgba(249,115,22,0.2); }
 
-/* ✅ 新增：竞赛操作按钮组样式，与 .msg-btn 风格保持一致 */
+/* ── 竞赛操作按钮组 ── */
 .item-actions { display: flex; gap: 6px; flex-shrink: 0; margin-left: 8px; }
-.item-btn { display: flex; align-items: center; padding: 4px 10px; border-radius: 14px; font-size: 12px; font-weight: 600; cursor: pointer; border: 1px solid transparent; transition: all 0.2s; }
+.item-btn { display: flex; align-items: center; padding: 4px 10px; border-radius: 14px; font-size: 12px; font-weight: 600; cursor: pointer; border: 1px solid transparent; transition: all 0.2s; position: relative; }
 .btn-manage { background: rgba(139,92,246,0.08); color: #7c3aed; border-color: rgba(139,92,246,0.15); }
 .btn-manage:hover { background: rgba(139,92,246,0.14); }
 .btn-review { background: rgba(245,158,11,0.08); color: #d97706; border-color: rgba(245,158,11,0.2); }
 .btn-review:hover { background: rgba(245,158,11,0.14); }
 
-.competence-card {
-  margin-top: 4px;
-}
+/* ── 能力画像 ── */
+.competence-card { margin-top: 4px; }
+.tags-row { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 14px; }
+.tags-row .tag { padding: 4px 10px; background: rgba(139,92,246,0.08); color: #7c3aed; border-radius: 999px; font-size: 12px; font-weight: 600; }
+.radar-list { display: flex; flex-direction: column; gap: 8px; }
+.radar-item { display: flex; align-items: center; gap: 8px; }
+.radar-label { width: 84px; font-size: 12px; color: #777; }
+.radar-bar { flex: 1; height: 6px; border-radius: 999px; background: rgba(139,92,246,0.08); overflow: hidden; }
+.radar-bar-fill { height: 100%; border-radius: 999px; background: linear-gradient(90deg, #a78bfa, #8b5cf6); }
+.radar-score { width: 36px; text-align: right; font-size: 12px; color: #555; }
+.total-chip { margin-left: auto; padding: 3px 10px; border-radius: 999px; background: rgba(16,185,129,0.08); color: #059669; font-size: 12px; font-weight: 600; }
 
-.tags-row {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 6px;
-  margin-bottom: 14px;
-}
-
-.tags-row .tag {
-  padding: 4px 10px;
-  background: rgba(139,92,246,0.08);
-  color: #7c3aed;
-  border-radius: 999px;
-  font-size: 12px;
-  font-weight: 600;
-}
-
-.tag-input {
-  min-width: 140px;
-  border: none;
-  outline: none;
-  background: transparent;
-  font-size: 13px;
-  color: #555;
-}
-
-.radar-list {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-
-.radar-item {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
-.radar-label {
-  width: 84px;
-  font-size: 12px;
-  color: #777;
-}
-
-.radar-bar {
-  flex: 1;
-  height: 6px;
-  border-radius: 999px;
-  background: rgba(139,92,246,0.08);
-  overflow: hidden;
-}
-
-.radar-bar-fill {
-  height: 100%;
-  border-radius: 999px;
-  background: linear-gradient(90deg, #a78bfa, #8b5cf6);
-}
-
-.radar-score {
-  width: 36px;
-  text-align: right;
-  font-size: 12px;
-  color: #555;
-}
-
-.total-chip {
-  margin-left: auto;
-  padding: 3px 10px;
-  border-radius: 999px;
-  background: rgba(16,185,129,0.08);
-  color: #059669;
-  font-size: 12px;
-  font-weight: 600;
-}
-
+/* ── Toast ── */
 .toast { position: fixed; bottom: 32px; left: 50%; transform: translateX(-50%); background: rgba(240,253,244,0.96); border: 1px solid rgba(52,211,153,0.3); border-radius: 14px; padding: 12px 20px; font-size: 14px; font-weight: 600; color: #065f46; display: flex; align-items: center; gap: 8px; box-shadow: 0 8px 32px rgba(0,0,0,0.1); z-index: 999; }
 .toast-enter-active, .toast-leave-active { transition: all 0.3s; }
 .toast-enter-from, .toast-leave-to { opacity: 0; transform: translateX(-50%) translateY(12px); }
 
-@media (max-width: 600px) {
-  .form-grid, .competitions-grid { grid-template-columns: 1fr; }
-  .nav { padding: 12px 16px; }
-}
+/* ── 响应式 ── */
+@media (max-width: 900px) { .competitions-grid { grid-template-columns: 1fr 1fr; } }
+@media (max-width: 600px) { .form-grid, .competitions-grid, .shortcut-bar { grid-template-columns: 1fr; } .nav { padding: 12px 16px; } }
 </style>

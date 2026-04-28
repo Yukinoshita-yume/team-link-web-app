@@ -19,6 +19,13 @@ import {
   PROFILE_APPLY_TEXT_URL,
   TEAM_DIAGNOSE_URL,
   APPLICATION_AI_REVIEW_URL,
+  ALLREGISTEREDCOMPETITIONS,
+  NOTIFICATION_COUNTS_URL,
+  MARK_REVIEWED_URL,
+  DIRECT_SEND_URL,
+  DIRECT_CONVERSATION_URL,
+  DIRECT_SESSIONS_URL,
+  DIRECT_UNREAD_URL,
 } from "./config";
 
 
@@ -264,6 +271,36 @@ export async function allCreatedCompetitionsApi(params) {
   }
 }
 
+//获取用户报名但尚未审核通过的竞赛（admission_status=0）
+export async function allRegisteredCompetitionsApi(params) {
+  try {
+    const response = await api.get(ALLREGISTEREDCOMPETITIONS, { params });
+    return response;
+  } catch (error) {
+    throw error;
+  }
+}
+
+//获取未读消息数和待审核报名数
+export async function notificationCountsApi(params) {
+  try {
+    const response = await api.get(NOTIFICATION_COUNTS_URL, { params });
+    return response;
+  } catch (error) {
+    throw error;
+  }
+}
+
+//队长打开审核页时标记所有待审核申请为"已查看"，清除红点
+export async function markReviewedApi(params) {
+  try {
+    const response = await api.put(MARK_REVIEWED_URL, null, { params });
+    return response;
+  } catch (error) {
+    throw error;
+  }
+}
+
 //将信息标记为已读
 export async function readApi(params) {
   try {
@@ -380,4 +417,37 @@ export async function approveApplicationApi(competitionId, applicantUserId) {
   } catch (error) {
     throw error;
   }
+}
+// ────────────── 私信相关 ──────────────
+
+// 发送私信
+export async function sendDirectMessageApi(senderId, receiverId, content) {
+  try {
+    const response = await api.post(DIRECT_SEND_URL, { senderId, receiverId, content });
+    return response;
+  } catch (error) { throw error; }
+}
+
+// 查询与某人的对话记录（同时标记已读）
+export async function getConversationApi(params) {
+  try {
+    const response = await api.get(DIRECT_CONVERSATION_URL, { params });
+    return response;
+  } catch (error) { throw error; }
+}
+
+// 查询我的私信会话列表
+export async function getChatSessionsApi(params) {
+  try {
+    const response = await api.get(DIRECT_SESSIONS_URL, { params });
+    return response;
+  } catch (error) { throw error; }
+}
+
+// 查询私信未读总数
+export async function getUnreadDirectCountApi(params) {
+  try {
+    const response = await api.get(DIRECT_UNREAD_URL, { params });
+    return response;
+  } catch (error) { throw error; }
 }

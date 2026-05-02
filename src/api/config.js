@@ -50,5 +50,8 @@ export const PROFILE_APPLY_TEXT_URL = '/user/profile/apply-text-analysis';
 // 报名审核相关
 export const APPLICATION_AI_REVIEW_URL = '/api/applications';
 
-// 队伍诊断
+// 队伍诊断相关
 export const TEAM_DIAGNOSE_URL = '/api/diagnosis/team';
+
+// AI对话相关
+export const AI_CHAT_URL = '/ai/chat';

@@ -14,6 +14,7 @@ import DmPage from "@/components/DmPage.vue";
 import SearchPage from "@/components/SearchPage.vue";
 import ReviewList from "@/views/ReviewList.vue";
 import TeamDiagnosePage from "@/components/TeamDiagnosePage.vue";
+import AiChatPage from "@/components/AiChatPage.vue";
 
 const routes = [
   { path: "/", redirect: "/home" },
@@ -28,6 +29,7 @@ const routes = [
   { path: "/user-page", component: userPage },
   { path: "/chat", component: ChatPage },
   { path: "/dm-page", component: DmPage },
+  { path: "/ai-chat", component: AiChatPage },
   {
     path: "/project-detail",
     component: ProjectDetail,

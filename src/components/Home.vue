@@ -22,10 +22,14 @@
         </div>
 
         <div class="nav-right">
-          <!-- AI 搜索按钮：改为橙紫渐变，更醒目 -->
           <button class="btn-ai" @click="goToAiSearch">
             <span class="ai-icon">✦</span>
             <span>AI 搜索</span>
+          </button>
+          <!-- AI 对话入口（导航栏） -->
+          <button class="btn-ai-chat" @click="goToAiChat" title="AI 对话助手">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2a2 2 0 0 1 2 2c0 .74-.4 1.39-1 1.73V7h1a7 7 0 0 1 7 7h1a1 1 0 0 1 1 1v3a1 1 0 0 1-1 1h-1v1a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-1H2a1 1 0 0 1-1-1v-3a1 1 0 0 1 1-1h1a7 7 0 0 1 7-7h1V5.73c-.6-.34-1-.99-1-1.73a2 2 0 0 1 2-2z"/></svg>
+            <span>AI 助手</span>
           </button>
           <div class="avatar-btn" v-if="hasLogin" @click="goToUser()" title="个人主页">
             <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
@@ -63,6 +67,11 @@
           <button class="hero-btn-ai" @click="goToAiSearch">
             <span class="ai-icon">✦</span>
             用 AI 智能匹配
+          </button>
+          <!-- AI 对话入口（Hero 区） -->
+          <button class="hero-btn-chat" @click="goToAiChat">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2a2 2 0 0 1 2 2c0 .74-.4 1.39-1 1.73V7h1a7 7 0 0 1 7 7h1a1 1 0 0 1 1 1v3a1 1 0 0 1-1 1h-1v1a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-1H2a1 1 0 0 1-1-1v-3a1 1 0 0 1 1-1h1a7 7 0 0 1 7-7h1V5.73c-.6-.34-1-.99-1-1.73a2 2 0 0 1 2-2z"/></svg>
+            问问 AI 助手
           </button>
           <div class="hero-stats">
             <div class="stat-item">
@@ -167,6 +176,14 @@
       </div>
     </div>
 
+    <!-- 悬浮 AI 助手按钮 -->
+    <button class="fab-ai" @click="goToAiChat" title="AI 对话助手">
+      <div class="fab-orb">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="1.8"><path d="M12 2a2 2 0 0 1 2 2c0 .74-.4 1.39-1 1.73V7h1a7 7 0 0 1 7 7h1a1 1 0 0 1 1 1v3a1 1 0 0 1-1 1h-1v1a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-1H2a1 1 0 0 1-1-1v-3a1 1 0 0 1 1-1h1a7 7 0 0 1 7-7h1V5.73c-.6-.34-1-.99-1-1.73a2 2 0 0 1 2-2z"/></svg>
+      </div>
+      <span class="fab-label">AI 助手</span>
+    </button>
+
     <footer class="footer">CompeteHub · 让每一次挑战都有意义 🏆</footer>
   </div>
 </template>
@@ -203,6 +220,7 @@ const goToUser = () => router.push("/personal-page")
 const goToDetail = (id) => router.push({ path: "/project-detail", query: { id } })
 const logout = () => { removeToken(); localStorage.removeItem("local-user"); hasLogin.value = false; router.replace("/home") }
 const goToAiSearch = () => { if (!hasLogin.value) { router.push("/login"); return } router.push("/search") }
+const goToAiChat = () => { if (!hasLogin.value) { router.push("/login"); return } router.push("/ai-chat") }
 
 onMounted(() => { selectPage(); userInfo() })
 window.addEventListener("keydown", (e) => { if (e.key === "Enter") { page.value = 1; selectPage() } })
@@ -232,7 +250,6 @@ async function userInfo() {
   font-family: -apple-system, BlinkMacSystemFont, 'PingFang SC', sans-serif;
 }
 
-/* 三个背景光晕，第三个加一点暖橙色点缀 */
 .blob { position: fixed; border-radius: 50%; filter: blur(80px); pointer-events: none; z-index: 0; }
 .blob1 { width: 480px; height: 480px; background: rgba(167,139,250,0.16); top: -120px; right: -80px; }
 .blob2 { width: 380px; height: 380px; background: rgba(196,181,253,0.12); bottom: 0; left: -60px; }
@@ -250,12 +267,12 @@ async function userInfo() {
   background: rgba(255,255,255,0.88); backdrop-filter: blur(18px);
   border-bottom: 1px solid rgba(139,92,246,0.08);
 }
-.nav-row1 { display: flex; align-items: center; padding: 0 20px; height: 64px; gap: 12px; position: relative; }
+.nav-row1 { display: flex; align-items: center; padding: 0 20px; height: 64px; gap: 10px; position: relative; }
 .nav-row2 { display: none; padding: 0 16px 10px; }
 .nav-logo { display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
 .logo-icon { font-size: 20px; }
 .logo-text { font-size: 16px; font-weight: 800; color: #1a1028; white-space: nowrap; }
-.nav-center { position: absolute; left: 50%; transform: translateX(-50%); width: min(420px, 40%); }
+.nav-center { position: absolute; left: 50%; transform: translateX(-50%); width: min(420px, 38%); }
 .nav-right { display: flex; align-items: center; gap: 8px; margin-left: auto; }
 
 .search-wrap {
@@ -271,67 +288,46 @@ input[type="search"]::-webkit-search-cancel-button { -webkit-appearance: none; }
 .search-btn { padding: 6px 16px; white-space: nowrap; background: linear-gradient(135deg, #8b5cf6, #6d28d9); color: white; border: none; border-radius: 20px; font-size: 13px; font-weight: 600; cursor: pointer; transition: all 0.2s; box-shadow: 0 3px 10px rgba(109,40,217,0.22); }
 .search-btn:hover { transform: translateY(-1px); }
 
-/* AI 搜索按钮：橙紫双色渐变，更有辨识度 */
 .btn-ai {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  padding: 7px 16px;
-
+  display: flex; align-items: center; gap: 6px; padding: 7px 15px;
   background: linear-gradient(135deg, #a78bfa, #8b5cf6, #6d28d9);
-  background-size: 200% 200%;
-  animation: aiGradient 4s ease infinite;
-
-  color: white;
-  border: none;
-  border-radius: 20px;
-
-  font-size: 13px;
-  font-weight: 700;
-  cursor: pointer;
-  transition: all 0.25s;
-
-  box-shadow: 0 4px 18px rgba(139,92,246,0.35);
-  white-space: nowrap;
+  background-size: 200% 200%; animation: aiGradient 4s ease infinite;
+  color: white; border: none; border-radius: 20px;
+  font-size: 13px; font-weight: 700; cursor: pointer; transition: all 0.25s;
+  box-shadow: 0 4px 18px rgba(139,92,246,0.35); white-space: nowrap;
 }
-.btn-ai:hover { transform: translateY(-1px); box-shadow: 0 5px 18px rgba(138, 72, 236, 0.35); }
+.btn-ai:hover { transform: translateY(-1px); box-shadow: 0 5px 20px rgba(138,72,236,0.4); }
 @keyframes aiGradient { 0%{background-position:0% 50%} 50%{background-position:100% 50%} 100%{background-position:0% 50%} }
 .ai-icon { font-size: 12px; animation: aiSpin 3s linear infinite; }
 @keyframes aiSpin { 0%,100%{transform:rotate(0deg)} 50%{transform:rotate(180deg)} }
 
+/* AI 对话按钮（导航） */
+.btn-ai-chat {
+  display: flex; align-items: center; gap: 6px; padding: 7px 14px;
+  background: rgba(124,58,237,0.08); border: 1.5px solid rgba(124,58,237,0.2);
+  color: #7c3aed; border-radius: 20px;
+  font-size: 13px; font-weight: 600; cursor: pointer; transition: all 0.2s;
+  white-space: nowrap;
+}
+.btn-ai-chat:hover { background: rgba(124,58,237,0.14); transform: translateY(-1px); }
+
 .avatar-btn { width: 36px; height: 36px; border-radius: 50%; background: rgba(139,92,246,0.08); border: 1.5px solid rgba(139,92,246,0.15); display: flex; align-items: center; justify-content: center; color: #7c3aed; cursor: pointer; transition: all 0.2s; flex-shrink: 0; }
 .avatar-btn:hover { transform: scale(1.08); background: rgba(139,92,246,0.14); }
-
 .btn-login { display: flex; align-items: center; gap: 5px; padding: 7px 16px; white-space: nowrap; background: linear-gradient(135deg, #8b5cf6, #6d28d9); color: white; border: none; border-radius: 20px; font-size: 13px; font-weight: 600; cursor: pointer; transition: all 0.2s; box-shadow: 0 3px 12px rgba(109,40,217,0.25); }
 .btn-login:hover { transform: translateY(-1px); }
 .btn-logout { display: flex; align-items: center; gap: 5px; padding: 7px 14px; white-space: nowrap; background: rgba(239,68,68,0.07); color: #dc2626; border: 1px solid rgba(239,68,68,0.15); border-radius: 20px; font-size: 13px; font-weight: 600; cursor: pointer; transition: all 0.2s; }
 .btn-logout:hover { background: rgba(239,68,68,0.12); }
 
-@media (max-width: 920px) { .nav-center { width: min(300px, 36%); } }
-@media (max-width: 780px) { .logo-text { display: none; } .nav-center { width: min(240px, 32%); } }
-@media (max-width: 600px) { .nav-center { display: none; } .nav-row2 { display: flex; } .nav-row2 .search-wrap { flex: 1; } }
-@media (max-width: 420px) { .btn-ai span:last-child { display: none; } .btn-ai { padding: 7px 10px; } }
-@media (max-width: 750px) {
-  .btn-ai span:last-child {
-    display: none;   /* 隐藏“AI搜索”文字 */
-  }
+@media (max-width: 1100px) { .nav-center { width: min(340px, 36%); } }
+@media (max-width: 900px) { .nav-center { width: min(260px, 32%); } .btn-ai-chat span { display: none; } .btn-ai-chat { padding: 7px 10px; } }
+@media (max-width: 780px) { .logo-text { display: none; } }
+@media (max-width: 640px) { .nav-center { display: none; } .nav-row2 { display: flex; } .nav-row2 .search-wrap { flex: 1; } }
+@media (max-width: 450px) { .btn-ai span:last-child { display: none; } .btn-ai { padding: 7px 10px; } .btn-login span, .btn-logout span { display: none; } }
 
-  .btn-login span {
-    display: none;   /* 登录文字隐藏 */
-  }
-
-  .btn-logout span {
-    display: none;   /* 退出文字隐藏 */
-  }
-}
 /* ── Hero ── */
 .hero { position: relative; z-index: 1; display: flex; align-items: center; justify-content: space-between; max-width: 1100px; margin: 0 auto; padding: 44px 28px 30px; gap: 20px; }
 .hero-content { flex: 1; }
-.hero-badge {
-  display: inline-flex; align-items: center; gap: 8px; padding: 5px 14px;
-  background: rgba(249,115,22,0.08); border: 1px solid rgba(249,115,22,0.2);
-  border-radius: 20px; font-size: 13px; font-weight: 600; color: #ea580c; margin-bottom: 16px;
-}
+.hero-badge { display: inline-flex; align-items: center; gap: 8px; padding: 5px 14px; background: rgba(249,115,22,0.08); border: 1px solid rgba(249,115,22,0.2); border-radius: 20px; font-size: 13px; font-weight: 600; color: #ea580c; margin-bottom: 16px; }
 .badge-dot { width: 6px; height: 6px; border-radius: 50%; background: #f97316; animation: pulse 2s infinite; }
 @keyframes pulse { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:0.5;transform:scale(0.7)} }
 
@@ -339,33 +335,25 @@ input[type="search"]::-webkit-search-cancel-button { -webkit-appearance: none; }
 .hero-highlight { background: linear-gradient(135deg, #58468e, #8b5cf6); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
 .hero-sub { font-size: 15px; color: #7c6f8a; margin-bottom: 24px; }
 
-.hero-actions { display: flex; align-items: center; gap: 20px; flex-wrap: wrap; }
+.hero-actions { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
 .hero-btn-ai {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 12px 24px;
-
+  display: flex; align-items: center; gap: 8px; padding: 12px 24px;
   background: linear-gradient(135deg, #ac96ea, #8b5cf6, #6d28d9);
-  background-size: 200% 200%;
-  animation: aiGradient 4s ease infinite;
-
-  color: white;
-  border: none;
-  border-radius: 14px;
-
-  font-size: 15px;
-  font-weight: 700;
-
-  cursor: pointer;
-  transition: all 0.25s;
-
+  background-size: 200% 200%; animation: aiGradient 4s ease infinite;
+  color: white; border: none; border-radius: 14px;
+  font-size: 15px; font-weight: 700; cursor: pointer; transition: all 0.25s;
   box-shadow: 0 6px 24px rgba(139,92,246,0.35);
 }
-.hero-btn-ai:hover {
-  transform: translateY(-2px) scale(1.02);
-  box-shadow: 0 10px 32px rgba(139,92,246,0.45);
+.hero-btn-ai:hover { transform: translateY(-2px) scale(1.02); box-shadow: 0 10px 32px rgba(139,92,246,0.45); }
+
+/* AI 对话按钮（Hero） */
+.hero-btn-chat {
+  display: flex; align-items: center; gap: 8px; padding: 12px 22px;
+  background: rgba(124,58,237,0.08); border: 1.5px solid rgba(124,58,237,0.22);
+  color: #7c3aed; border-radius: 14px;
+  font-size: 15px; font-weight: 700; cursor: pointer; transition: all 0.25s;
 }
+.hero-btn-chat:hover { background: rgba(124,58,237,0.15); transform: translateY(-2px); box-shadow: 0 8px 24px rgba(124,58,237,0.15); }
 
 .hero-stats { display: flex; align-items: center; gap: 16px; }
 .stat-item { display: flex; flex-direction: column; align-items: center; }
@@ -383,64 +371,33 @@ input[type="search"]::-webkit-search-cancel-button { -webkit-appearance: none; }
 .e3{top:95px;left:80px;animation-delay:1.6s} .e4{top:38px;left:16px;animation-delay:.4s}
 @keyframes floatUp { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-8px)} }
 
-@media (max-width: 680px) { .hero { flex-direction: column; padding: 28px 20px 20px; } .hero-deco { display: none; } }
-@media (max-width: 680px) {
-  .hero {
-    flex-direction: column;
-    text-align: center;
-    padding: 45px 18px 18px;
-  }
+@media (max-width: 680px) { .hero { flex-direction: column; text-align: center; padding: 32px 18px 18px; } .hero-content { display: flex; flex-direction: column; align-items: center; } .hero-deco { display: none; } }
 
-  .hero-content {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-  }
-}
 /* ── 主内容 ── */
-.content { position: relative; z-index: 1; max-width: 1100px; margin: 0 auto; padding: 0 20px 60px; }
-
+.content { position: relative; z-index: 1; max-width: 1100px; margin: 0 auto; padding: 0 20px 100px; }
 .result-bar { margin-bottom: 18px; padding: 8px 4px; font-size: 13px; color: #999; }
 .result-bar strong { color: #8b5cf6; font-weight: 700; }
 .result-keyword { color: #c4b5fd; margin-left: 4px; }
-
 .loading-wrap { display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 100px 0; color: rgba(139,92,246,0.4); gap: 14px; font-size: 14px; }
 .loading-ring { width: 40px; height: 40px; border-radius: 50%; border: 3px solid rgba(139,92,246,0.1); border-top-color: #8b5cf6; animation: ringRot 0.8s linear infinite; }
 
-/* ── 竞赛卡片 ── */
 .items-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 14px; }
 @media (max-width: 760px) { .items-grid { grid-template-columns: 1fr; } }
 
 .item-card {
   position: relative; overflow: hidden; display: flex; flex-direction: column;
   border-radius: 20px; cursor: pointer;
-  background: rgba(255,255,255,0.8);
-  border: 1px solid rgba(255,255,255,0.95);
+  background: rgba(255,255,255,0.8); border: 1px solid rgba(255,255,255,0.95);
   backdrop-filter: blur(14px);
   box-shadow: 0 2px 16px rgba(100,80,200,0.06), 0 1px 4px rgba(0,0,0,0.03);
   transition: transform 0.25s cubic-bezier(0.34,1.56,0.64,1), box-shadow 0.25s ease;
 }
 .item-card:hover { transform: translateY(-5px); box-shadow: 0 14px 36px rgba(139,92,246,0.13); }
-
-/* 顶部彩色细线（统一紫色系，更高级） */
-.item-card::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  height: 3px;
-
-  background: linear-gradient(90deg, #c4b5fd, #a78bfa, #8b5cf6);
-
-  border-radius: 20px 20px 0 0;
-}
+.item-card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px; background: linear-gradient(90deg, #c4b5fd, #a78bfa, #8b5cf6); border-radius: 20px 20px 0 0; }
 
 .card-body { padding: 20px 20px 12px; flex: 1; display: flex; flex-direction: column; gap: 12px; }
-
 .card-top { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; }
 .card-title-text { font-size: 16px; font-weight: 700; color: #1a1028; line-height: 1.45; flex: 1; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
-
 .card-creator { display: flex; flex-direction: column; align-items: center; gap: 4px; flex-shrink: 0; }
 .creator-avatar { width: 34px; height: 34px; border-radius: 50%; background: linear-gradient(135deg, #8b5cf6, #6d28d9); display: flex; align-items: center; justify-content: center; color: white; font-size: 14px; font-weight: 700; box-shadow: 0 2px 8px rgba(109,40,217,0.2); }
 .creator-name { font-size: 11px; color: #bbb; max-width: 48px; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
@@ -453,7 +410,6 @@ input[type="search"]::-webkit-search-cancel-button { -webkit-appearance: none; }
 
 .card-tags { display: flex; gap: 5px; flex-wrap: wrap; }
 .tag { padding: 3px 10px; background: rgba(139,92,246,0.07); color: #7c3aed; border: 1px solid rgba(139,92,246,0.13); border-radius: 20px; font-size: 11px; font-weight: 600; white-space: nowrap; max-width: 90px; overflow: hidden; text-overflow: ellipsis; }
-
 .card-footer { padding: 10px 20px 14px; display: flex; justify-content: flex-end; border-top: 1px solid rgba(139,92,246,0.07); }
 .view-btn { display: flex; align-items: center; gap: 4px; font-size: 12px; font-weight: 700; color: #a78bfa; transition: all 0.2s; }
 .item-card:hover .view-btn { color: #8b5cf6; gap: 8px; }
@@ -471,6 +427,26 @@ input[type="search"]::-webkit-search-cancel-button { -webkit-appearance: none; }
 .page-btn:disabled { opacity: 0.3; cursor: not-allowed; }
 .page-btn.arrow { color: #c4b5fd; }
 .page-total { font-size: 12px; color: #c4b5fd; margin-left: 6px; }
+
+/* ── 悬浮 AI 按钮 ── */
+.fab-ai {
+  position: fixed; bottom: 28px; right: 24px; z-index: 100;
+  display: flex; align-items: center; gap: 8px;
+  padding: 0 18px 0 0; height: 52px;
+  background: linear-gradient(135deg, #a78bfa, #7c3aed, #5b21b6);
+  border: none; border-radius: 999px; cursor: pointer;
+  box-shadow: 0 8px 30px rgba(124,58,237,0.45);
+  transition: all 0.3s cubic-bezier(0.34,1.56,0.64,1);
+  animation: fabBreath 3s ease-in-out infinite;
+}
+.fab-ai:hover { transform: scale(1.08) translateY(-3px); box-shadow: 0 14px 40px rgba(124,58,237,0.55); }
+@keyframes fabBreath { 0%,100%{box-shadow:0 8px 30px rgba(124,58,237,0.45)} 50%{box-shadow:0 12px 40px rgba(124,58,237,0.6)} }
+.fab-orb {
+  width: 52px; height: 52px; border-radius: 50%; flex-shrink: 0;
+  display: flex; align-items: center; justify-content: center;
+  background: rgba(255,255,255,0.15);
+}
+.fab-label { font-size: 14px; font-weight: 700; color: white; white-space: nowrap; }
 
 /* ── Footer ── */
 .footer { position: relative; z-index: 1; text-align: center; padding: 20px; font-size: 13px; color: #c4b5fd; border-top: 1px solid rgba(139,92,246,0.07); }

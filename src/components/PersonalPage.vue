@@ -27,6 +27,23 @@
         <div class="avatar-sub">{{ user.userEmail }}</div>
       </div>
 
+      <!-- ★ AI 对话入口横幅 -->
+      <div class="ai-banner" @click="goToAiChat">
+        <div class="ai-banner-left">
+          <div class="ai-banner-orb">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="1.8"><path d="M12 2a2 2 0 0 1 2 2c0 .74-.4 1.39-1 1.73V7h1a7 7 0 0 1 7 7h1a1 1 0 0 1 1 1v3a1 1 0 0 1-1 1h-1v1a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-1H2a1 1 0 0 1-1-1v-3a1 1 0 0 1 1-1h1a7 7 0 0 1 7-7h1V5.73c-.6-.34-1-.99-1-1.73a2 2 0 0 1 2-2z"/></svg>
+          </div>
+          <div class="ai-banner-text">
+            <span class="ai-banner-title">AI 竞赛助手</span>
+            <span class="ai-banner-sub">为你推荐竞赛 · 组队策略 · 申请指导</span>
+          </div>
+        </div>
+        <div class="ai-banner-right">
+          <span class="ai-banner-btn">开始对话</span>
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"/></svg>
+        </div>
+      </div>
+
       <!-- ★ 快捷入口栏：系统通知 + 私信 -->
       <div class="shortcut-bar">
         <button class="shortcut-card sc-notify" @click="goToMessagePage">
@@ -98,10 +115,10 @@
           </div>
           <div class="project-list">
             <div
-              class="project-item"
-              v-for="p in registeredProjects"
-              :key="p.competitionId"
-              @click="toCompetitionDetail(p.competitionId)"
+                class="project-item"
+                v-for="p in registeredProjects"
+                :key="p.competitionId"
+                @click="toCompetitionDetail(p.competitionId)"
             >
               <span class="project-name">{{ p.title }}</span>
               <span class="status-chip chip-pending">待审核</span>
@@ -118,10 +135,10 @@
           </div>
           <div class="project-list">
             <div
-              class="project-item"
-              v-for="p in appliedProjects"
-              :key="p.competitionId"
-              @click="toCompetitionDetail(p.competitionId)"
+                class="project-item"
+                v-for="p in appliedProjects"
+                :key="p.competitionId"
+                @click="toCompetitionDetail(p.competitionId)"
             >
               <span class="project-name">{{ p.title }}</span>
               <span class="project-action">查看 ›</span>
@@ -144,9 +161,9 @@
           </div>
           <div class="project-list">
             <div
-              class="project-item"
-              v-for="p in createdProjects"
-              :key="p.competitionId"
+                class="project-item"
+                v-for="p in createdProjects"
+                :key="p.competitionId"
             >
               <span class="project-name">{{ p.title }}</span>
               <div class="item-actions">
@@ -225,9 +242,9 @@ const appliedProjects = ref([])
 const createdProjects = ref([])
 
 // 徽章数量
-const unreadMessageCount = ref(0)   // 系统通知未读
-const pendingReviewCount = ref(0)   // 待审核报名
-const unreadDirectCount  = ref(0)   // 私信未读
+const unreadMessageCount = ref(0)
+const pendingReviewCount = ref(0)
+const unreadDirectCount  = ref(0)
 
 const competenceCard = ref({
   skillTags: [],
@@ -266,6 +283,7 @@ const toCompetitionDetail   = (id) => router.push({ path: '/project-detail', que
 const toReview              = (id, title) => router.push({ path: '/review', query: { id, title } })
 const goToMessagePage       = () => router.push('/message-page')
 const goToDmPage            = () => router.push('/dm-page')
+const goToAiChat            = () => router.push('/ai-chat')
 
 async function loadRegisteredCompetitions() {
   try { const r = await allRegisteredCompetitionsApi({ userId: localUser.value.userId }); if (r.code === 0) registeredProjects.value = r.data } catch (e) { console.error(e) }
@@ -338,33 +356,60 @@ onMounted(() => {
 .avatar-name { font-size: 20px; font-weight: 800; color: #1a1028; margin-bottom: 3px; }
 .avatar-sub { font-size: 13px; color: #aaa; }
 
-/* ── 快捷入口栏 ── */
-.shortcut-bar {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 12px;
+/* ── AI 对话入口横幅 ── */
+.ai-banner {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 16px 20px;
+  background: linear-gradient(135deg, #ede9fe, #ddd6fe, #c4b5fd);
+  border: 1.5px solid rgba(139,92,246,0.2);
+  border-radius: 18px; cursor: pointer;
+  transition: all 0.25s cubic-bezier(0.34,1.56,0.64,1);
+  box-shadow: 0 4px 20px rgba(139,92,246,0.12);
+  position: relative; overflow: hidden;
 }
-.shortcut-card {
-  display: flex; align-items: center; gap: 14px;
-  padding: 16px 18px;
-  background: rgba(255,255,255,0.82);
-  border: 1px solid rgba(255,255,255,0.9);
-  border-radius: 18px;
-  backdrop-filter: blur(12px);
-  box-shadow: 0 2px 16px rgba(100,80,200,0.06);
-  cursor: pointer;
-  transition: all 0.22s;
-  position: relative;
-  text-align: left;
+.ai-banner::before {
+  content: '';
+  position: absolute; inset: 0;
+  background: linear-gradient(135deg, rgba(167,139,250,0.2), transparent);
+  opacity: 0; transition: opacity 0.25s;
 }
-.shortcut-card:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 6px 24px rgba(100,80,200,0.1);
-}
-.sc-icon-wrap {
-  width: 44px; height: 44px; border-radius: 14px; flex-shrink: 0;
+.ai-banner:hover { transform: translateY(-2px); box-shadow: 0 8px 30px rgba(139,92,246,0.2); }
+.ai-banner:hover::before { opacity: 1; }
+
+.ai-banner-left { display: flex; align-items: center; gap: 14px; }
+.ai-banner-orb {
+  width: 46px; height: 46px; border-radius: 50%; flex-shrink: 0;
+  background: linear-gradient(135deg, #a78bfa, #7c3aed);
   display: flex; align-items: center; justify-content: center;
+  box-shadow: 0 4px 14px rgba(124,58,237,0.35);
+  animation: orbFloat 3.5s ease-in-out infinite;
 }
+@keyframes orbFloat { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-4px)} }
+
+.ai-banner-text { display: flex; flex-direction: column; gap: 3px; }
+.ai-banner-title { font-size: 15px; font-weight: 800; color: #4c1d95; }
+.ai-banner-sub { font-size: 12px; color: #7c3aed; opacity: 0.8; }
+
+.ai-banner-right { display: flex; align-items: center; gap: 6px; flex-shrink: 0; }
+.ai-banner-btn {
+  padding: 6px 14px; border-radius: 16px;
+  background: rgba(124,58,237,0.15); color: #5b21b6;
+  font-size: 13px; font-weight: 700; border: 1px solid rgba(124,58,237,0.25);
+}
+.ai-banner:hover .ai-banner-btn { background: rgba(124,58,237,0.22); }
+.ai-banner-right svg { color: #7c3aed; }
+
+/* ── 快捷入口栏 ── */
+.shortcut-bar { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.shortcut-card {
+  display: flex; align-items: center; gap: 14px; padding: 16px 18px;
+  background: rgba(255,255,255,0.82); border: 1px solid rgba(255,255,255,0.9);
+  border-radius: 18px; backdrop-filter: blur(12px);
+  box-shadow: 0 2px 16px rgba(100,80,200,0.06);
+  cursor: pointer; transition: all 0.22s; position: relative; text-align: left;
+}
+.shortcut-card:hover { transform: translateY(-2px); box-shadow: 0 6px 24px rgba(100,80,200,0.1); }
+.sc-icon-wrap { width: 44px; height: 44px; border-radius: 14px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; }
 .sc-icon-purple { background: linear-gradient(135deg, #ede9fe, #ddd6fe); color: #7c3aed; }
 .sc-icon-blue   { background: linear-gradient(135deg, #dbeafe, #bfdbfe); color: #2563eb; }
 .sc-text { flex: 1; display: flex; flex-direction: column; gap: 3px; min-width: 0; }
@@ -372,15 +417,7 @@ onMounted(() => {
 .sc-sub { font-size: 12px; color: #8b5cf6; font-weight: 500; }
 .sc-sub-empty { color: #ccc; font-weight: 400; }
 .sc-dm .sc-sub { color: #2563eb; }
-.sc-badge {
-  flex-shrink: 0;
-  min-width: 22px; height: 22px;
-  background: #ef4444; color: white;
-  border-radius: 999px; font-size: 11px; font-weight: 700;
-  display: flex; align-items: center; justify-content: center;
-  padding: 0 5px;
-  animation: badge-pop 0.3s cubic-bezier(0.34,1.56,0.64,1);
-}
+.sc-badge { flex-shrink: 0; min-width: 22px; height: 22px; background: #ef4444; color: white; border-radius: 999px; font-size: 11px; font-weight: 700; display: flex; align-items: center; justify-content: center; padding: 0 5px; animation: badge-pop 0.3s cubic-bezier(0.34,1.56,0.64,1); }
 .sc-badge-blue { background: #3b82f6; }
 .sc-arrow { color: #ccc; flex-shrink: 0; }
 .shortcut-card:hover .sc-arrow { color: #8b5cf6; }
@@ -456,5 +493,9 @@ onMounted(() => {
 
 /* ── 响应式 ── */
 @media (max-width: 900px) { .competitions-grid { grid-template-columns: 1fr 1fr; } }
-@media (max-width: 600px) { .form-grid, .competitions-grid, .shortcut-bar { grid-template-columns: 1fr; } .nav { padding: 12px 16px; } }
+@media (max-width: 600px) {
+  .form-grid, .competitions-grid, .shortcut-bar { grid-template-columns: 1fr; }
+  .nav { padding: 12px 16px; }
+  .ai-banner-sub { display: none; }
+}
 </style>

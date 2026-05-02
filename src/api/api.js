@@ -451,3 +451,13 @@ export async function getUnreadDirectCountApi(params) {
     return response;
   } catch (error) { throw error; }
 }
+
+// AI 多轮对话
+export async function aiChatApi(messages) {
+  try {
+    const response = await api.post('/ai/chat', { messages });
+    return response;
+  } catch (error) {
+    throw error;
+  }
+}

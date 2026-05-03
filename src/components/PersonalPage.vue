@@ -172,7 +172,7 @@
                 </button>
                 <button class="item-btn btn-review badge-wrap" @click.stop="toReview(p.competitionId, p.title)">
                   审核
-                  <span v-if="pendingReviewCount > 0" class="badge badge-sm">{{ pendingReviewCount > 99 ? '99+' : pendingReviewCount }}</span>
+                  <span v-if="getPendingCount(p.competitionId) > 0" class="badge badge-sm">{{ getPendingCount(p.competitionId) > 99 ? '99+' : getPendingCount(p.competitionId) }}</span>
                 </button>
               </div>
             </div>
@@ -227,6 +227,7 @@ import {
   notificationCountsApi,
   getCompetenceCardApi,
   getUnreadDirectCountApi,
+  pendingReviewCountApi,
 } from '@/api/api'
 import router from '@/router'
 
@@ -243,8 +244,12 @@ const createdProjects = ref([])
 
 // 徽章数量
 const unreadMessageCount = ref(0)
-const pendingReviewCount = ref(0)
+// 每个竞赛独立的待审核数（key: competitionId, value: count）
+const pendingReviewMap   = ref({})
 const unreadDirectCount  = ref(0)
+
+// 获取某竞赛的待审核数（用于模板）
+const getPendingCount = (id) => pendingReviewMap.value[id] || 0
 
 const competenceCard = ref({
   skillTags: [],
@@ -280,7 +285,11 @@ const saveUserInfo = async () => {
 const handleLogout          = () => router.push('/home')
 const handleCreateProject   = () => router.push('/create-project')
 const toCompetitionDetail   = (id) => router.push({ path: '/project-detail', query: { id } })
-const toReview              = (id, title) => router.push({ path: '/review', query: { id, title } })
+const toReview = (id, title) => {
+  // 点击审核时本地立即清零，视觉即时反馈（后端 markReviewed 由审核页调用）
+  pendingReviewMap.value = { ...pendingReviewMap.value, [id]: 0 }
+  router.push({ path: '/review', query: { id, title } })
+}
 const goToMessagePage       = () => router.push('/message-page')
 const goToDmPage            = () => router.push('/dm-page')
 const goToAiChat            = () => router.push('/ai-chat')
@@ -292,16 +301,36 @@ async function loadAppliedCompetitions() {
   try { const r = await allAppliedCompetitionsApi({ userId: localUser.value.userId }); if (r.code === 0) appliedProjects.value = r.data } catch (e) { console.error(e) }
 }
 async function loadCreatedCompetitions() {
-  try { const r = await allCreatedCompetitionsApi({ userId: localUser.value.userId }); if (r.code === 0) createdProjects.value = r.data } catch (e) { console.error(e) }
+  try {
+    const r = await allCreatedCompetitionsApi({ userId: localUser.value.userId })
+    if (r.code === 0) {
+      createdProjects.value = r.data
+      await loadPendingReviewCounts()  // 加载完创办竞赛后，立即按竞赛查询各自红点
+    }
+  } catch (e) { console.error(e) }
 }
 async function loadNotificationCounts() {
   try {
     const r = await notificationCountsApi({ userId: localUser.value.userId })
     if (r.code === 0 && r.data) {
       unreadMessageCount.value = r.data.unreadMessage || 0
-      pendingReviewCount.value  = r.data.pendingReview  || 0
+      // pendingReview 全局总数不再使用，改为按竞赛单独查询
     }
   } catch (e) { console.error(e) }
+}
+
+// 加载每个创办竞赛各自的待审核数
+async function loadPendingReviewCounts() {
+  const map = {}
+  await Promise.all(
+      createdProjects.value.map(async (p) => {
+        try {
+          const r = await pendingReviewCountApi({ competitionId: p.competitionId })
+          if (r.code === 0) map[p.competitionId] = r.data || 0
+        } catch (e) { console.error(e) }
+      })
+  )
+  pendingReviewMap.value = map
 }
 async function loadUnreadDirect() {
   try {

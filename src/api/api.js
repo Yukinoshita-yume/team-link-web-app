@@ -461,3 +461,6 @@ export async function aiChatApi(messages) {
     throw error;
   }
 }
+
+export const pendingReviewCountApi = (params) =>
+    api.get('/index/pendingReviewCount', { params })

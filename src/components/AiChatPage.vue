@@ -42,7 +42,7 @@
           </div>
 
           <h1 class="welcome-title">你好，我是 AI 竞赛助手</h1>
-          <p class="welcome-desc">专为 CompeteHub 打造<br/>为你提供竞赛推荐、组队策略、申请指导</p>
+          <p class="welcome-desc">基于通义千问，专为 CompeteHub 打造<br/>为你提供竞赛推荐、组队策略、申请指导</p>
         </div>
 
         <!-- 能力卡片展示 -->
@@ -147,14 +147,13 @@
             </div>
           </div>
 
-          <!-- 流式输出中的 AI 消息 -->
+          <!-- 流式输出中的 AI 消息：已完整的行做 Markdown 渲染，最后一行纯文本追加 -->
           <div class="msg-row msg-ai" v-if="aiTyping && streamingText !== ''">
             <div class="msg-avatar ai-avatar">
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2"><path d="M12 2a2 2 0 0 1 2 2c0 .74-.4 1.39-1 1.73V7h1a7 7 0 0 1 7 7h1a1 1 0 0 1 1 1v3a1 1 0 0 1-1 1h-1v1a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-1H2a1 1 0 0 1-1-1v-3a1 1 0 0 1 1-1h1a7 7 0 0 1 7-7h1V5.73c-.6-.34-1-.99-1-1.73a2 2 0 0 1 2-2z"/></svg>
             </div>
             <div class="msg-content">
-              <div class="bubble bubble-ai streaming-bubble" v-html="renderMarkdown(streamingText)">
-              </div>
+              <div class="bubble bubble-ai streaming-bubble" v-html="renderStreamingMarkdown(streamingText)"></div>
             </div>
           </div>
 
@@ -228,12 +227,12 @@ const router = useRouter()
 const store = useStore()
 
 // ─── 状态 ───
-const phase = ref('welcome')
-const messages = ref([])
+const phase = ref('welcome')          // 'welcome' | 'chat'
+const messages = ref([])              // { role, content, time }
 const inputText = ref('')
 const inputFocused = ref(false)
 const aiTyping = ref(false)
-const streamingText = ref('')
+const streamingText = ref('')         // 流式输出的累计文字
 const errorMsg = ref('')
 const msgListRef = ref(null)
 const inputRef = ref(null)
@@ -254,7 +253,9 @@ const features = [
 ]
 
 const quickQuestions = [
+  { emoji: '🔍', text: '根据我的专业推荐适合的竞赛' },
   { emoji: '👥', text: '如何快速组建一支优秀的队伍？' },
+  { emoji: '📝', text: '帮我写一份竞赛报名申请书模板' },
   { emoji: '📅', text: '竞赛备战应该如何安排时间？' },
   { emoji: '💡', text: '参加竞赛有哪些新手必知技巧？' },
   { emoji: '🎯', text: '如何评估自己适合哪类竞赛？' },
@@ -281,9 +282,11 @@ const startWithQuestion = (text) => {
   handleSend()
 }
 
+// ─── 流式输出模拟（逐字显示）───
+// 流式阶段只显示纯文本，完成后再做 Markdown 渲染，避免不完整语法渲染错乱
 const simulateStreaming = async (fullText) => {
   streamingText.value = ''
-  const chunkSize = 3
+  const chunkSize = 4
   let i = 0
   return new Promise((resolve) => {
     const tick = () => {
@@ -294,13 +297,31 @@ const simulateStreaming = async (fullText) => {
       streamingText.value = fullText.slice(0, i + chunkSize)
       i += chunkSize
       scrollToBottom()
-      // 标点停顿长一点
       const ch = fullText[i] || ''
-      const delay = /[。！？，、；：]/.test(ch) ? 60 : 18
+      const delay = /[。！？，、；：]/.test(ch) ? 55 : 16
       setTimeout(tick, delay)
     }
     tick()
   })
+}
+
+// ─── 带重试的 AI 请求 ───
+const callAiWithRetry = async (history, maxRetries = 2) => {
+  let lastErr
+  for (let attempt = 0; attempt <= maxRetries; attempt++) {
+    try {
+      const res = await aiChatApi(history)
+      if (res.code === 0 && res.data) return res
+      throw new Error(res.message || '响应异常')
+    } catch (e) {
+      lastErr = e
+      if (attempt < maxRetries) {
+        // 重试前等待 1s * 次数，给网络恢复时间
+        await new Promise(r => setTimeout(r, 1000 * (attempt + 1)))
+      }
+    }
+  }
+  throw lastErr
 }
 
 const handleSend = async () => {
@@ -325,23 +346,21 @@ const handleSend = async () => {
 
   try {
     const history = messages.value.map(m => ({ role: m.role, content: m.content }))
-    const res = await aiChatApi(history)
-
-    if (res.code === 0 && res.data) {
-      // 流式逐字展示
-      await simulateStreaming(res.data)
-      // 流式结束 → 存入消息列表
-      messages.value.push({ role: 'assistant', content: res.data, time: getNowTime() })
-      streamingText.value = ''
-    } else {
-      throw new Error(res.message || '响应异常')
-    }
-  } catch (e) {
-    errorMsg.value = '请求失败，请稍后重试。'
-    const errMsg = '抱歉，我遇到了一点问题。请检查网络连接后重试。'
-    await simulateStreaming(errMsg)
-    messages.value.push({ role: 'assistant', content: errMsg, time: getNowTime() })
+    // 带重试的请求（最多重试 2 次）
+    const res = await callAiWithRetry(history, 2)
+    // 流式逐字展示（纯文本）
+    await simulateStreaming(res.data)
     streamingText.value = ''
+    // 流式结束 → 存入消息列表（此时做完整 Markdown 渲染）
+    messages.value.push({ role: 'assistant', content: res.data, time: getNowTime() })
+  } catch (e) {
+    streamingText.value = ''
+    errorMsg.value = '网络请求失败，已自动重试，请稍后再试。'
+    messages.value.push({
+      role: 'assistant',
+      content: '抱歉，我遇到了一点问题，请检查网络连接后重试。',
+      time: getNowTime()
+    })
   } finally {
     aiTyping.value = false
     await scrollToBottom()
@@ -372,6 +391,7 @@ const resetInputHeight = () => {
 /**
  * Markdown 渲染
  * 支持：### 标题、**粗体**、`代码`、有序列表、无序列表、普通段落
+ * 修复：列表项内冒号后内容逐字分行、段落间距过大、### 未渲染等问题
  */
 const renderMarkdown = (text) => {
   if (!text) return ''
@@ -388,9 +408,11 @@ const renderMarkdown = (text) => {
       .replace(/`([^`]+)`/g, '<code>$1</code>')
 
   // 自动高亮列表项标题：匹配"短词＋冒号"开头，未被**包裹时自动加 strong
+  // 支持：中文词、英文词、中英混合（如 LeetCode、GitHub）
   const autoHighlightTitle = (s) => {
     if (s.includes('<strong>')) return s
-    return s.replace(/^([一-龥a-zA-Z\s]{1,15}[\uff1a:])/, '<strong>$1</strong>')
+    // 匹配：1~20个字符（中文/英文/数字/空格/点/连字符）后接全角或半角冒号
+    return s.replace(/^([一-龥a-zA-Z0-9\s\-\.]{1,20}[：:])/, '<strong>$1</strong>')
   }
 
   // 3. 按行分割处理
@@ -459,6 +481,42 @@ const renderMarkdown = (text) => {
 
   closeList()
   return result.join('')
+}
+
+/**
+ * 流式渲染策略：
+ * 1. 以最后一个 \n 为界，之前的行已确认完整 → 完整 Markdown 渲染
+ * 2. 最后一行（正在输入中，可能截断）→ 做行内格式(inlineFormat)渲染 + 光标
+ *    注意：不做块级解析（不识别列表/标题），避免截断时误判
+ */
+const renderStreamingMarkdown = (text) => {
+  if (!text) return ''
+  const cursor = '<span class="stream-cursor">▋</span>'
+
+  // 行内格式复用（需和 renderMarkdown 内部保持一致）
+  const escape = (s) => s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
+  const inlineFmt = (s) => escape(s)
+      .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+      .replace(/`([^`]+)`/g, '<code>$1</code>')
+
+  const lastNl = text.lastIndexOf('\n')
+
+  if (lastNl === -1) {
+    // 还没有任何换行，整体是不完整的第一行
+    return `<p class="md-p stream-tail">${inlineFmt(text)}${cursor}</p>`
+  }
+
+  // 已完整的行 → 完整 Markdown 块级渲染
+  const completePart = text.slice(0, lastNl)
+  const renderedComplete = renderMarkdown(completePart)
+
+  // 最后一行（可能截断）→ 只做行内格式，不做块级解析
+  const tailPart = text.slice(lastNl + 1)
+  const tailHtml = tailPart.trim()
+      ? `<p class="md-p stream-tail">${inlineFmt(tailPart)}${cursor}</p>`
+      : `<p class="md-p stream-tail">${cursor}</p>`
+
+  return renderedComplete + tailHtml
 }
 
 onMounted(() => {
@@ -687,15 +745,41 @@ onMounted(() => {
   box-shadow: 0 4px 18px rgba(109,40,217,0.3);
 }
 
-/* ── 流式输出气泡：末尾光标闪烁 ── */
-.streaming-bubble::after {
-  content: '▋';
+/* ── 流式输出气泡：已完整行 Markdown + 末行纯文本光标 ── */
+.stream-inline {
+  display: inline;
+  white-space: normal;   /* 允许正常中文断行，不强制每字换行 */
+  word-break: break-word;
+  overflow-wrap: anywhere;
+  color: #374151;
+  font-size: 14px;
+  line-height: 1.75;
+}
+.stream-cursor {
   display: inline-block;
   color: #8b5cf6;
-  animation: cursorBlink 0.8s step-start infinite;
+  animation: cursorBlink 0.75s step-start infinite;
   margin-left: 1px;
   font-size: 13px;
   vertical-align: baseline;
+  line-height: 1;
+}
+/* stream-tail：末行 block 布局，中文正常换行，行内格式已渲染 */
+.bubble-ai :deep(.stream-tail) {
+  display: block;
+  margin: 2px 0 0;
+  padding: 0;
+  word-break: break-word;
+  overflow-wrap: break-word;
+  white-space: normal;
+  line-height: 1.75;
+  color: #374151;
+  font-size: 14px;
+}
+/* stream-tail 内的 strong 也要紫色 */
+.bubble-ai :deep(.stream-tail strong) {
+  font-weight: 700;
+  color: #5b21b6;
 }
 @keyframes cursorBlink { 0%,100%{opacity:1} 50%{opacity:0} }
 
@@ -887,7 +971,7 @@ onMounted(() => {
   font-size: 14px; color: #1a1028; background: transparent;
   font-family: inherit; line-height: 1.5;
   min-height: 22px; max-height: 130px;
-  padding: 0 12px;
+  padding: 0;
   align-self: center;
 }
 .the-input::placeholder { color: #c4b5fd; }

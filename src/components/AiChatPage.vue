@@ -42,7 +42,7 @@
           </div>
 
           <h1 class="welcome-title">你好，我是 AI 竞赛助手</h1>
-          <p class="welcome-desc">基于通义千问，专为 CompeteHub 打造<br/>为你提供竞赛推荐、组队策略、申请指导</p>
+          <p class="welcome-desc">专为 CompeteHub 打造<br/>为你提供竞赛推荐、组队策略、申请指导</p>
         </div>
 
         <!-- 能力卡片展示 -->
@@ -253,9 +253,7 @@ const features = [
 ]
 
 const quickQuestions = [
-  { emoji: '🔍', text: '根据我的专业推荐适合的竞赛' },
   { emoji: '👥', text: '如何快速组建一支优秀的队伍？' },
-  { emoji: '📝', text: '帮我写一份竞赛报名申请书模板' },
   { emoji: '📅', text: '竞赛备战应该如何安排时间？' },
   { emoji: '💡', text: '参加竞赛有哪些新手必知技巧？' },
   { emoji: '🎯', text: '如何评估自己适合哪类竞赛？' },
@@ -971,7 +969,7 @@ onMounted(() => {
   font-size: 14px; color: #1a1028; background: transparent;
   font-family: inherit; line-height: 1.5;
   min-height: 22px; max-height: 130px;
-  padding: 0;
+  padding: 0 12px;
   align-self: center;
 }
 .the-input::placeholder { color: #c4b5fd; }

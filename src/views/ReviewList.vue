@@ -69,8 +69,10 @@
 
     <!-- ✅ 复用 AIReviewDrawer，传入当前选中申请人 -->
     <AIReviewDrawer
+      v-if="maxParticipants>0"
       :visible="drawerVisible"
       :applicant="drawerApplicant"
+      :is-full="isFull"
       @close="drawerVisible = false"
       @approve="handleApprove"
     />
@@ -90,7 +92,7 @@ import { useRoute } from 'vue-router'
 import router from '@/router'
 import ApplicantCard from '@/components/review/ApplicantCard.vue'
 import AIReviewDrawer from '@/components/review/AIReviewDrawer.vue'
-import { unadmittedMembersApi, aiReviewApplicationApi, approveApplicationApi } from '@/api/api'
+import { unadmittedMembersApi, aiReviewApplicationApi, approveApplicationApi, maxParticipantsApi } from '@/api/api'
 
 const route = useRoute()
 // ✅ 从路由参数获取竞赛 ID，每个竞赛审核页面独立
@@ -103,6 +105,7 @@ const selectedId = ref(null)
 const drawerVisible = ref(false)
 const drawerApplicant = ref(null)
 const activeFilter = ref('all')
+const maxParticipants = ref(0) 
 
 const toast = ref({ show: false, msg: '', icon: '' })
 
@@ -120,8 +123,23 @@ const filteredApplicants = computed(() => {
 
 const pendingCount = computed(() => applicants.value.filter(a => a.status === 0 || !a.status).length)
 const approvedCount = computed(() => applicants.value.filter(a => a.status === 1).length)
+//是否满员
+const isFull = computed(() => approvedCount.value >= maxParticipants.value)
+
 
 const goBack = () => router.back()
+
+// 加载最大参与人数，控制通过申请的数量
+async function loadMaxParticipants() {
+  try {
+    const res = await maxParticipantsApi({ competitionId: competitionId.value })
+    if (res.code === 0 && res.data) {
+      maxParticipants.value = res.data
+    }
+  } catch (e) {
+    console.error(e)
+  }
+}
 
 // ✅ 加载当前竞赛的报名列表，与原 MessagePage2 的 unadmittedMembersApi 调用方式相同
 async function loadApplicants() {
@@ -193,6 +211,8 @@ async function handleApprove(applicant) {
       updateLocalStatus(applicant.userId, 1)
       drawerVisible.value = false
       showToast('✅', `已通过 ${applicant.name} 的申请`)
+      //刷新列表，获取最新的审核状态和 AI 评审结果
+      loadApplicants()
       return
     }
     showToast('⚠️', res.msg || '操作失败')
@@ -214,6 +234,7 @@ function updateApplicant(applicant) {
 
 onMounted(() => {
   loadApplicants()
+  loadMaxParticipants()
 })
 </script>
 

@@ -81,7 +81,7 @@
 
         <!-- 底部操作 -->
         <div class="drawer-footer">
-          <button class="footer-btn btn-approve" v-if="!applicant.status" @click="$emit('approve', applicant)">
+          <button class="footer-btn btn-approve" v-if="(!applicant.status)&&!props.isFull" @click="$emit('approve', applicant)">
             通过
           </button>
         </div>
@@ -94,6 +94,7 @@
 import { computed } from 'vue'
 import RadarChart from '@/components/review/RadarChart.vue'
 
+
 const props = defineProps({
   visible: {
     type: Boolean,
@@ -102,6 +103,10 @@ const props = defineProps({
   applicant: {
     type: Object,
     default: null,
+  },
+  isFull: {
+    type: Boolean,
+    default: true,
   },
 })
 

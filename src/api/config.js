@@ -20,6 +20,7 @@ export const CHECK_APPLICATION_URL = '/index/checkApplication';
 export const CANCEL_REGISTRATION_URL = '/index/cancelRegistration';
 export const CREATOR_URL = '/index/creator';
 export const DELETE_COMPETITION_URL = '/index/deleteCompetitioin';
+export const MAX_PARTICIPANTS_URL = '/index/maxParticipants';
 
 // 页面数据获取
 export const SELECTPAGE_URL = '/index/selectPage';

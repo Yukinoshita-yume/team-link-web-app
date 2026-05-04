@@ -201,6 +201,16 @@ export async function competitionDetailApi(params) {
   }
 }
 
+//查询竞赛的最大参与人数
+export async function maxParticipantsApi(params) {
+  try {
+    const response = await api.get(url.MAX_PARTICIPANTS_URL, { params });
+    return response;
+  } catch (error) {
+    throw error;
+  }
+}
+
 //更新用户的信息
 export async function updateApi(user) {
   try {

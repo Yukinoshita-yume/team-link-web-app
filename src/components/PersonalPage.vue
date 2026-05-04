@@ -191,16 +191,31 @@
             综合 {{ competenceCard.totalScore }} 分
           </span>
         </div>
+
+        <!-- 技能标签 -->
         <div class="tags-row">
           <div class="tag" v-for="tag in competenceCard.skillTags" :key="tag">{{ tag }}</div>
         </div>
-        <div class="radar-list">
-          <div class="radar-item" v-for="item in radarItems" :key="item.key">
-            <span class="radar-label">{{ item.label }}</span>
-            <div class="radar-bar">
-              <div class="radar-bar-fill" :style="{ width: (item.value || 0) + '%' }"></div>
+
+        <!-- 雷达图 + 条形分数并列 -->
+        <div class="competence-body">
+          <div class="radar-chart-wrap">
+            <canvas
+                id="competenceRadar"
+                width="220"
+                height="220"
+                role="img"
+                aria-label="能力雷达图，包含技术深度、竞赛经验、团队协作、学习能力、时间投入五个维度"
+            >能力雷达图</canvas>
+          </div>
+          <div class="radar-list">
+            <div class="radar-item" v-for="item in radarItems" :key="item.key">
+              <span class="radar-label">{{ item.label }}</span>
+              <div class="radar-bar">
+                <div class="radar-bar-fill" :style="{ width: (item.value || 0) + '%' }"></div>
+              </div>
+              <span class="radar-score">{{ item.value != null ? item.value : '-' }}</span>
             </div>
-            <span class="radar-score">{{ item.value != null ? item.value : '-' }}</span>
           </div>
         </div>
       </div>
@@ -217,8 +232,17 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, onMounted, nextTick, onBeforeUnmount } from 'vue'
 import { useStore } from 'vuex'
+import {
+  Chart,
+  RadarController,
+  RadialLinearScale,
+  PointElement,
+  LineElement,
+  Filler,
+  Tooltip,
+} from 'chart.js'
 import {
   updateApi,
   allAppliedCompetitionsApi,
@@ -230,6 +254,8 @@ import {
   pendingReviewCountApi,
 } from '@/api/api'
 import router from '@/router'
+
+Chart.register(RadarController, RadialLinearScale, PointElement, LineElement, Filler, Tooltip)
 
 const store = useStore()
 const localUser = computed(() => store.state.user)
@@ -244,16 +270,20 @@ const createdProjects = ref([])
 
 // 徽章数量
 const unreadMessageCount = ref(0)
-// 每个竞赛独立的待审核数（key: competitionId, value: count）
 const pendingReviewMap   = ref({})
 const unreadDirectCount  = ref(0)
 
-// 获取某竞赛的待审核数（用于模板）
 const getPendingCount = (id) => pendingReviewMap.value[id] || 0
 
 const competenceCard = ref({
   skillTags: [],
-  radarScores: { technicalDepth: 0, competitionExperience: 0, teamwork: 0, learningAbility: 0, timeCommitment: 0 },
+  radarScores: {
+    technicalDepth: 0,
+    competitionExperience: 0,
+    teamwork: 0,
+    learningAbility: 0,
+    timeCommitment: 0,
+  },
   totalScore: null,
 })
 const loadingProfile = ref(false)
@@ -269,6 +299,68 @@ const radarItems = computed(() => {
   ]
 })
 
+// ── 雷达图实例 ──────────────────────────────────────────
+let radarChartInstance = null
+
+async function initRadarChart() {
+  await nextTick()
+  const canvas = document.getElementById('competenceRadar')
+  if (!canvas) return
+
+  if (radarChartInstance) {
+    radarChartInstance.destroy()
+    radarChartInstance = null
+  }
+
+  const isDark = matchMedia('(prefers-color-scheme: dark)').matches
+  const textColor = isDark ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.45)'
+  const gridColor = isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.07)'
+
+  radarChartInstance = new Chart(canvas, {
+    type: 'radar',
+    data: {
+      labels: radarItems.value.map(i => i.label),
+      datasets: [{
+        data: radarItems.value.map(i => i.value || 0),
+        backgroundColor: 'rgba(139,92,246,0.13)',
+        borderColor: '#8b5cf6',
+        borderWidth: 2,
+        pointBackgroundColor: '#8b5cf6',
+        pointBorderColor: 'transparent',
+        pointRadius: 3,
+        pointHoverRadius: 5,
+        pointHoverBackgroundColor: '#6d28d9',
+      }],
+    },
+    options: {
+      responsive: false,
+      animation: { duration: 600, easing: 'easeOutQuart' },
+      plugins: {
+        legend: { display: false },
+        tooltip: {
+          callbacks: {
+            label: ctx => ' ' + ctx.raw + ' 分',
+          },
+        },
+      },
+      scales: {
+        r: {
+          min: 0,
+          max: 100,
+          ticks: { stepSize: 25, display: false },
+          grid: { color: gridColor, lineWidth: 0.8 },
+          angleLines: { color: gridColor, lineWidth: 0.8 },
+          pointLabels: {
+            font: { size: 11, family: '-apple-system, BlinkMacSystemFont, "PingFang SC", sans-serif' },
+            color: textColor,
+          },
+        },
+      },
+    },
+  })
+}
+
+// ── 数据请求 ────────────────────────────────────────────
 const saveUserInfo = async () => {
   saving.value = true
   try {
@@ -286,13 +378,12 @@ const handleLogout          = () => router.push('/home')
 const handleCreateProject   = () => router.push('/create-project')
 const toCompetitionDetail   = (id) => router.push({ path: '/project-detail', query: { id } })
 const toReview = (id, title) => {
-  // 点击审核时本地立即清零，视觉即时反馈（后端 markReviewed 由审核页调用）
   pendingReviewMap.value = { ...pendingReviewMap.value, [id]: 0 }
   router.push({ path: '/review', query: { id, title } })
 }
-const goToMessagePage       = () => router.push('/message-page')
-const goToDmPage            = () => router.push('/dm-page')
-const goToAiChat            = () => router.push('/ai-chat')
+const goToMessagePage = () => router.push('/message-page')
+const goToDmPage      = () => router.push('/dm-page')
+const goToAiChat      = () => router.push('/ai-chat')
 
 async function loadRegisteredCompetitions() {
   try { const r = await allRegisteredCompetitionsApi({ userId: localUser.value.userId }); if (r.code === 0) registeredProjects.value = r.data } catch (e) { console.error(e) }
@@ -305,7 +396,7 @@ async function loadCreatedCompetitions() {
     const r = await allCreatedCompetitionsApi({ userId: localUser.value.userId })
     if (r.code === 0) {
       createdProjects.value = r.data
-      await loadPendingReviewCounts()  // 加载完创办竞赛后，立即按竞赛查询各自红点
+      await loadPendingReviewCounts()
     }
   } catch (e) { console.error(e) }
 }
@@ -314,12 +405,9 @@ async function loadNotificationCounts() {
     const r = await notificationCountsApi({ userId: localUser.value.userId })
     if (r.code === 0 && r.data) {
       unreadMessageCount.value = r.data.unreadMessage || 0
-      // pendingReview 全局总数不再使用，改为按竞赛单独查询
     }
   } catch (e) { console.error(e) }
 }
-
-// 加载每个创办竞赛各自的待审核数
 async function loadPendingReviewCounts() {
   const map = {}
   await Promise.all(
@@ -342,7 +430,10 @@ async function loadCompetenceCard() {
   try {
     loadingProfile.value = true
     const r = await getCompetenceCardApi()
-    if (r.code === 0 && r.data) competenceCard.value = r.data
+    if (r.code === 0 && r.data) {
+      competenceCard.value = r.data
+      initRadarChart()
+    }
   } catch (e) { console.error(e) }
   finally { loadingProfile.value = false }
 }
@@ -355,6 +446,13 @@ onMounted(() => {
   loadNotificationCounts()
   loadUnreadDirect()
   loadCompetenceCard()
+})
+
+onBeforeUnmount(() => {
+  if (radarChartInstance) {
+    radarChartInstance.destroy()
+    radarChartInstance = null
+  }
 })
 </script>
 
@@ -386,57 +484,24 @@ onMounted(() => {
 .avatar-sub { font-size: 13px; color: #aaa; }
 
 /* ── AI 对话入口横幅 ── */
-.ai-banner {
-  display: flex; align-items: center; justify-content: space-between;
-  padding: 16px 20px;
-  background: linear-gradient(135deg, #ede9fe, #ddd6fe, #c4b5fd);
-  border: 1.5px solid rgba(139,92,246,0.2);
-  border-radius: 18px; cursor: pointer;
-  transition: all 0.25s cubic-bezier(0.34,1.56,0.64,1);
-  box-shadow: 0 4px 20px rgba(139,92,246,0.12);
-  position: relative; overflow: hidden;
-}
-.ai-banner::before {
-  content: '';
-  position: absolute; inset: 0;
-  background: linear-gradient(135deg, rgba(167,139,250,0.2), transparent);
-  opacity: 0; transition: opacity 0.25s;
-}
+.ai-banner { display: flex; align-items: center; justify-content: space-between; padding: 16px 20px; background: linear-gradient(135deg, #ede9fe, #ddd6fe, #c4b5fd); border: 1.5px solid rgba(139,92,246,0.2); border-radius: 18px; cursor: pointer; transition: all 0.25s cubic-bezier(0.34,1.56,0.64,1); box-shadow: 0 4px 20px rgba(139,92,246,0.12); position: relative; overflow: hidden; }
+.ai-banner::before { content: ''; position: absolute; inset: 0; background: linear-gradient(135deg, rgba(167,139,250,0.2), transparent); opacity: 0; transition: opacity 0.25s; }
 .ai-banner:hover { transform: translateY(-2px); box-shadow: 0 8px 30px rgba(139,92,246,0.2); }
 .ai-banner:hover::before { opacity: 1; }
-
 .ai-banner-left { display: flex; align-items: center; gap: 14px; }
-.ai-banner-orb {
-  width: 46px; height: 46px; border-radius: 50%; flex-shrink: 0;
-  background: linear-gradient(135deg, #a78bfa, #7c3aed);
-  display: flex; align-items: center; justify-content: center;
-  box-shadow: 0 4px 14px rgba(124,58,237,0.35);
-  animation: orbFloat 3.5s ease-in-out infinite;
-}
+.ai-banner-orb { width: 46px; height: 46px; border-radius: 50%; flex-shrink: 0; background: linear-gradient(135deg, #a78bfa, #7c3aed); display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 14px rgba(124,58,237,0.35); animation: orbFloat 3.5s ease-in-out infinite; }
 @keyframes orbFloat { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-4px)} }
-
 .ai-banner-text { display: flex; flex-direction: column; gap: 3px; }
 .ai-banner-title { font-size: 15px; font-weight: 800; color: #4c1d95; }
 .ai-banner-sub { font-size: 12px; color: #7c3aed; opacity: 0.8; }
-
 .ai-banner-right { display: flex; align-items: center; gap: 6px; flex-shrink: 0; }
-.ai-banner-btn {
-  padding: 6px 14px; border-radius: 16px;
-  background: rgba(124,58,237,0.15); color: #5b21b6;
-  font-size: 13px; font-weight: 700; border: 1px solid rgba(124,58,237,0.25);
-}
+.ai-banner-btn { padding: 6px 14px; border-radius: 16px; background: rgba(124,58,237,0.15); color: #5b21b6; font-size: 13px; font-weight: 700; border: 1px solid rgba(124,58,237,0.25); }
 .ai-banner:hover .ai-banner-btn { background: rgba(124,58,237,0.22); }
 .ai-banner-right svg { color: #7c3aed; }
 
 /* ── 快捷入口栏 ── */
 .shortcut-bar { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
-.shortcut-card {
-  display: flex; align-items: center; gap: 14px; padding: 16px 18px;
-  background: rgba(255,255,255,0.82); border: 1px solid rgba(255,255,255,0.9);
-  border-radius: 18px; backdrop-filter: blur(12px);
-  box-shadow: 0 2px 16px rgba(100,80,200,0.06);
-  cursor: pointer; transition: all 0.22s; position: relative; text-align: left;
-}
+.shortcut-card { display: flex; align-items: center; gap: 14px; padding: 16px 18px; background: rgba(255,255,255,0.82); border: 1px solid rgba(255,255,255,0.9); border-radius: 18px; backdrop-filter: blur(12px); box-shadow: 0 2px 16px rgba(100,80,200,0.06); cursor: pointer; transition: all 0.22s; position: relative; text-align: left; }
 .shortcut-card:hover { transform: translateY(-2px); box-shadow: 0 6px 24px rgba(100,80,200,0.1); }
 .sc-icon-wrap { width: 44px; height: 44px; border-radius: 14px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; }
 .sc-icon-purple { background: linear-gradient(135deg, #ede9fe, #ddd6fe); color: #7c3aed; }
@@ -505,14 +570,21 @@ onMounted(() => {
 
 /* ── 能力画像 ── */
 .competence-card { margin-top: 4px; }
-.tags-row { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 14px; }
+
+.tags-row { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 20px; }
 .tags-row .tag { padding: 4px 10px; background: rgba(139,92,246,0.08); color: #7c3aed; border-radius: 999px; font-size: 12px; font-weight: 600; }
-.radar-list { display: flex; flex-direction: column; gap: 8px; }
-.radar-item { display: flex; align-items: center; gap: 8px; }
-.radar-label { width: 84px; font-size: 12px; color: #777; }
-.radar-bar { flex: 1; height: 6px; border-radius: 999px; background: rgba(139,92,246,0.08); overflow: hidden; }
-.radar-bar-fill { height: 100%; border-radius: 999px; background: linear-gradient(90deg, #a78bfa, #8b5cf6); }
-.radar-score { width: 36px; text-align: right; font-size: 12px; color: #555; }
+
+/* 雷达图 + 条形并列布局 */
+.competence-body { display: flex; align-items: center; gap: 32px; }
+.radar-chart-wrap { flex-shrink: 0; }
+
+.radar-list { flex: 1; display: flex; flex-direction: column; gap: 12px; }
+.radar-item { display: flex; align-items: center; gap: 10px; }
+.radar-label { width: 60px; font-size: 13px; color: #666; flex-shrink: 0; }
+.radar-bar { flex: 1; height: 7px; border-radius: 999px; background: rgba(139,92,246,0.08); overflow: hidden; }
+.radar-bar-fill { height: 100%; border-radius: 999px; background: linear-gradient(90deg, #c4b5fd, #8b5cf6); transition: width 0.6s cubic-bezier(0.34,1.1,0.64,1); }
+.radar-score { width: 32px; text-align: right; font-size: 13px; font-weight: 600; color: #555; flex-shrink: 0; }
+
 .total-chip { margin-left: auto; padding: 3px 10px; border-radius: 999px; background: rgba(16,185,129,0.08); color: #059669; font-size: 12px; font-weight: 600; }
 
 /* ── Toast ── */
@@ -522,6 +594,10 @@ onMounted(() => {
 
 /* ── 响应式 ── */
 @media (max-width: 900px) { .competitions-grid { grid-template-columns: 1fr 1fr; } }
+@media (max-width: 700px) {
+  .competence-body { flex-direction: column; align-items: center; gap: 20px; }
+  .radar-list { width: 100%; }
+}
 @media (max-width: 600px) {
   .form-grid, .competitions-grid, .shortcut-bar { grid-template-columns: 1fr; }
   .nav { padding: 12px 16px; }

@@ -114,7 +114,7 @@ function formatTime(t) {
   const hm = d.toTimeString().slice(0, 5)
   if (diffDays === 0) return hm
   if (diffDays === 1) return `昨天 ${hm}`
-  if (diffDays < 7)  return `${['日','一','二','三','四','五','六'][d.getDay()]} ${hm}`
+  if (diffDays < 7)  return `周${['日','一','二','三','四','五','六'][d.getDay()]} ${hm}`
   return `${d.getMonth()+1}/${d.getDate()} ${hm}`
 }
 

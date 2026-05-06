@@ -27,7 +27,7 @@
         <div class="avatar-sub">{{ user.userEmail }}</div>
       </div>
 
-      <!-- ★ AI 对话入口横幅 -->
+      <!-- AI 对话入口横幅 -->
       <div class="ai-banner" @click="goToAiChat">
         <div class="ai-banner-left">
           <div class="ai-banner-orb">
@@ -44,7 +44,7 @@
         </div>
       </div>
 
-      <!-- ★ 快捷入口栏：系统通知 + 私信 -->
+      <!-- 快捷入口栏：系统通知 + 私信 -->
       <div class="shortcut-bar">
         <button class="shortcut-card sc-notify" @click="goToMessagePage">
           <div class="sc-icon-wrap sc-icon-purple">
@@ -107,7 +107,7 @@
       <!-- 竞赛信息三栏 -->
       <div class="competitions-grid">
 
-        <!-- ① 我报名的项目（待审核，admission_status=0） -->
+        <!-- 我报名的项目-->
         <div class="card">
           <div class="card-title">
             <div class="title-bar bar-orange"></div>
@@ -127,7 +127,7 @@
           </div>
         </div>
 
-        <!-- ② 我参与的项目（已录取，admission_status=1） -->
+        <!-- 我参与的项目 -->
         <div class="card">
           <div class="card-title">
             <div class="title-bar bar-amber"></div>
@@ -147,7 +147,7 @@
           </div>
         </div>
 
-        <!-- ③ 我创办的项目 -->
+        <!-- 我创办的项目 -->
         <div class="card">
           <div class="card-title">
             <div class="title-bar"></div>
@@ -360,7 +360,7 @@ async function initRadarChart() {
   })
 }
 
-// ── 数据请求 ────────────────────────────────────────────
+// 数据请求
 const saveUserInfo = async () => {
   saving.value = true
   try {

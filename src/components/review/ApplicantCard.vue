@@ -4,7 +4,6 @@
     :class="{ 'is-selected': selected }"
     @click.self="$emit('click')"
   >
-    <!-- checkbox 区域，阻止冒泡避免重复触发 -->
     <label class="card-checkbox" @click.stop>
       <input
         type="checkbox"
@@ -36,7 +35,7 @@
       </span>
     </div>
 
-    <!-- 匹配分 - 重点展示 -->
+    <!-- 匹配分 -->
     <div class="score-block" @click="$emit('click')">
       <div class="score-label">AI 匹配分</div>
       <div class="score-row">

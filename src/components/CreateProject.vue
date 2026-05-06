@@ -49,13 +49,7 @@
           <label>技能标签 <span class="tag-hint">最多 5 个</span></label>
           <div class="tags-wrap">
             <div class="tag-chip" v-for="(tag, i) in tags" :key="i">
-              <!--
-                关键修复：
-                1. 不用 v-model，改为 :value + @input 手动更新，避免 IME 合成期间 v-model 干扰
-                2. @compositionstart / @compositionend 标记合成状态
-                3. @input 里合成期间只更新值，不触发删除逻辑
-                4. @compositionend 里合成结束后再统一执行后处理（删空、限长）
-              -->
+
               <input
                   :value="tags[i]"
                   type="text"
@@ -105,15 +99,13 @@ const tags = ref([''])
 const competitionDetails = ref('')
 const isLoading = ref(false)
 
-// ─── IME 合成状态跟踪（每个标签独立记录） ───
-// key: 标签索引, value: true 表示正在 IME 合成中
+
 const composingMap = ref({})
 
 const canAddTag = computed(() => tags.value[tags.value.length - 1]?.trim() !== '')
 const addTag = () => { if (canAddTag.value && tags.value.length < 5) tags.value.push('') }
 const removeTag = (i) => { if (tags.value.length > 1) tags.value.splice(i, 1) }
 
-// ── 标签字节限制：最多 15 字节 ──
 const trimToByteLimit = (str, maxBytes = 15) => {
   let bytes = 0
   let result = ''
@@ -125,31 +117,24 @@ const trimToByteLimit = (str, maxBytes = 15) => {
   return result
 }
 
-// ── IME 开始：标记合成中，不做任何删除/后处理 ──
 const onCompositionStart = (i) => {
   composingMap.value[i] = true
 }
 
-// ── IME 结束：合成完成，拿到最终值，执行后处理 ──
 const onCompositionEnd = (i, e) => {
   composingMap.value[i] = false
   const val = e.target.value
-  // 先限长
   const trimmed = trimToByteLimit(val)
   tags.value[i] = trimmed
   if (e.target.value !== trimmed) e.target.value = trimmed
-  // 合成结束后，如果内容为空且不是第一个标签，删除该标签
   postProcess(i)
 }
 
-// ── 普通 input 事件：IME 合成期间只更新值，不做删除 ──
 const onTagInput = (i, e) => {
   if (composingMap.value[i]) {
-    // IME 合成进行中：只同步值，禁止任何删除/后处理
     tags.value[i] = e.target.value
     return
   }
-  // 非 IME 输入（英文、数字、粘贴等）：正常处理
   const val = e.target.value
   const trimmed = trimToByteLimit(val)
   tags.value[i] = trimmed
@@ -157,7 +142,6 @@ const onTagInput = (i, e) => {
   postProcess(i)
 }
 
-// ── Backspace 键：空标签时删除该项（IME 合成中也跳过） ──
 const onTagBackspace = (i) => {
   if (composingMap.value[i]) return
   if (tags.value[i] === '' && tags.value.length > 1) {
@@ -165,11 +149,8 @@ const onTagBackspace = (i) => {
   }
 }
 
-// ── 后处理：空标签自动删除（仅在非 IME 状态下调用） ──
 const postProcess = (i) => {
-  // 如果正在合成，跳过
   if (composingMap.value[i]) return
-  // 空内容且不是最后一个标签时删除
   if (tags.value[i]?.trim() === '' && tags.value.length > 1 && i < tags.value.length - 1) {
     tags.value.splice(i, 1)
   }

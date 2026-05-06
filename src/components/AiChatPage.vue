@@ -27,7 +27,7 @@
       <div style="width:80px" v-else></div>
     </nav>
 
-    <!-- ══════════════ 初始页 ══════════════ -->
+    <!--  初始页 -->
     <transition name="phase">
       <div class="welcome-screen" v-if="phase === 'welcome'" key="welcome">
         <div class="welcome-hero">
@@ -125,10 +125,6 @@
             </div>
           </div>
 
-          <!--
-            ★ 核心修复：流式阶段用纯文本展示，完全不做 Markdown 解析
-            用 <pre> 保留换行，white-space:pre-wrap 自动折行，彻底消灭逐字换行 bug
-          -->
           <div class="msg-row msg-ai" v-if="aiTyping && streamingText">
             <div class="msg-avatar ai-avatar">
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2"><path d="M12 2a2 2 0 0 1 2 2c0 .74-.4 1.39-1 1.73V7h1a7 7 0 0 1 7 7h1a1 1 0 0 1 1 1v3a1 1 0 0 1-1 1h-1v1a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-1H2a1 1 0 0 1-1-1v-3a1 1 0 0 1 1-1h1a7 7 0 0 1 7-7h1V5.73c-.6-.34-1-.99-1-1.73a2 2 0 0 1 2-2z"/></svg>
@@ -231,9 +227,7 @@ const features = [
 ]
 
 const quickQuestions = [
-  { emoji: '🔍', text: '根据我的专业推荐适合的竞赛' },
   { emoji: '👥', text: '如何快速组建一支优秀的队伍？' },
-  { emoji: '📝', text: '帮我写一份竞赛报名申请书模板' },
   { emoji: '📅', text: '竞赛备战应该如何安排时间？' },
   { emoji: '💡', text: '参加竞赛有哪些新手必知技巧？' },
   { emoji: '🎯', text: '如何评估自己适合哪类竞赛？' },
@@ -259,7 +253,6 @@ const startWithQuestion = (text) => {
   handleSend()
 }
 
-// ★ 流式输出：只更新纯文本，不做任何 HTML 渲染
 const simulateStreaming = async (fullText) => {
   streamingText.value = ''
   const chunkSize = 8
@@ -313,10 +306,8 @@ const handleSend = async () => {
   try {
     const history = messages.value.map(m => ({ role: m.role, content: m.content }))
     const res = await callAiWithRetry(history, 2)
-    // 流式阶段：纯文本展示
     await simulateStreaming(res.data)
     streamingText.value = ''
-    // 流式结束：存入 messages，此时 renderMarkdown 才介入渲染
     messages.value.push({ role: 'assistant', content: res.data, time: getNowTime() })
   } catch (e) {
     streamingText.value = ''
@@ -349,10 +340,7 @@ const resetInputHeight = () => {
   if (el) el.style.height = 'auto'
 }
 
-/**
- * ★ Markdown 渲染（仅用于已完成的消息，流式阶段完全不调用）
- * 支持：# 标题、**粗体**、`代码`、有序/无序列表、段落
- */
+
 // const renderMarkdown = (text) => {
 //   if (!text) return ''
 //   console.log('渲染 Markdown:', text)
@@ -495,7 +483,7 @@ onMounted(() => {
 .phase-enter-from { opacity: 0; transform: translateY(24px); }
 .phase-leave-to   { opacity: 0; transform: translateY(-16px); }
 
-/* ═══════════ 初始页 ═══════════ */
+/* 初始页 */
 .welcome-screen {
   flex: 1; overflow-y: auto; z-index: 1;
   display: flex; flex-direction: column; align-items: center;
@@ -549,7 +537,7 @@ onMounted(() => {
 .quick-card:hover .quick-arrow { color: #8b5cf6; }
 .welcome-input-wrap { width: 100%; max-width: 520px; }
 
-/* ═══════════ 对话页 ═══════════ */
+/* 对话页 */
 .chat-screen { flex: 1; display: flex; flex-direction: column; overflow: hidden; position: relative; z-index: 1; }
 .msg-list {
   flex: 1; overflow-y: auto; padding: 20px 16px;
@@ -588,15 +576,14 @@ onMounted(() => {
   box-shadow: 0 4px 18px rgba(109,40,217,0.3);
 }
 
-/* ★ 流式纯文本区域：pre + white-space:pre-wrap 保证正常折行 */
 .streaming-pre {
   margin: 0;
   padding: 0;
-  font-family: inherit;       /* 不使用等宽字体，保持正文风格 */
+  font-family: inherit;
   font-size: 14px;
   line-height: 1.75;
   color: #1a1028;
-  white-space: pre-wrap;      /* 保留换行，超长自动折行 */
+  white-space: pre-wrap;
   word-break: break-word;
   overflow-wrap: break-word;
   background: transparent;
@@ -614,7 +601,6 @@ onMounted(() => {
 }
 @keyframes cursorBlink { 0%,100%{opacity:1} 50%{opacity:0} }
 
-/* ── Markdown 渲染样式（仅已完成消息） ── */
 .bubble-ai :deep(.md-h) { font-weight: 700; color: #3b0fa0; line-height: 1.4; margin: 6px 0 2px; }
 .bubble-ai :deep(.md-h3) { font-size: 15px; }
 .bubble-ai :deep(.md-h4) { font-size: 14px; }
@@ -627,7 +613,7 @@ onMounted(() => {
   font-family: 'JetBrains Mono','SF Mono',monospace; font-size: 13px; color: #7c3aed;
 }
 
-/* 有序列表 —— 用原生 padding + list-style，彻底避免 grid 宽度计算问题 */
+/* 有序列表 */
 .bubble-ai :deep(.md-ol) {
   list-style: decimal;
   margin: 6px 0;
@@ -643,7 +629,7 @@ onMounted(() => {
 }
 .bubble-ai :deep(.md-ol li::marker) { color: #8b5cf6; font-weight: 700; }
 
-/* 无序列表 —— 同上，原生 disc + padding */
+/* 无序列表  */
 .bubble-ai :deep(.md-ul) {
   list-style: disc;
   margin: 6px 0;
@@ -673,7 +659,7 @@ onMounted(() => {
   border: 1px solid rgba(239,68,68,0.15); align-self: center;
 }
 
-/* ═══════════ 底部输入区 ═══════════ */
+/* 底部输入区 */
 .chat-input-area {
   flex-shrink: 0; padding: 10px 16px 14px;
   background: rgba(255,255,255,0.92); backdrop-filter: blur(24px);
@@ -710,7 +696,7 @@ onMounted(() => {
   flex: 1; border: none; outline: none; resize: none;
   font-size: 14px; color: #1a1028; background: transparent;
   font-family: inherit; line-height: 1.5;
-  min-height: 22px; max-height: 130px; padding: 0; align-self: center;
+  min-height: 22px; max-height: 130px; padding: 0 10px; align-self: center;
 }
 .the-input::placeholder { color: #c4b5fd; }
 .the-input:disabled { cursor: not-allowed; color: #a78bfa; }

@@ -21,7 +21,6 @@ import { ref, onMounted, watch } from 'vue'
 const props = defineProps({
   dimensions: {
     type: Array,
-    // [{ name: '技术能力', value: 85 }, ...]
     default: () => [],
   },
 })

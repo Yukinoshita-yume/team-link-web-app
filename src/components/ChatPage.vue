@@ -100,12 +100,12 @@ const textareaRef = ref(null)
 
 let pollTimer = null
 
-// ── 头像色 ──
+// 头像色
 const COLORS = ['#8b5cf6','#6d28d9','#2563eb','#0891b2','#059669','#d97706','#dc2626','#db2777']
 const avatarColor = (name) => COLORS[(name?.charCodeAt(0) || 0) % COLORS.length]
 const getInitial  = (name) => name?.charAt(0)?.toUpperCase() || '?'
 
-// ── 时间处理 ──
+// 时间处理
 function formatTime(t) {
   if (!t) return ''
   const d = new Date(t)
@@ -118,7 +118,6 @@ function formatTime(t) {
   return `${d.getMonth()+1}/${d.getDate()} ${hm}`
 }
 
-// 相邻两条消息超过 5 分钟才显示时间分割线
 function showTimeDivider(i) {
   if (i === 0) return true
   const prev = new Date(messages.value[i - 1].messageCreatedTime)
@@ -126,7 +125,7 @@ function showTimeDivider(i) {
   return (curr - prev) > 5 * 60 * 1000
 }
 
-// ── 滚动到底部 ──
+// 滚动到底部
 async function scrollToBottom(smooth = false) {
   await nextTick()
   if (msgListRef.value) {
@@ -134,7 +133,7 @@ async function scrollToBottom(smooth = false) {
   }
 }
 
-// ── 拉取对话 ──
+// 拉取对话
 async function loadMessages(silent = false) {
   if (!silent) loading.value = true
   try {
@@ -152,7 +151,7 @@ async function loadMessages(silent = false) {
   finally { loading.value = false }
 }
 
-// ── 发送消息 ──
+// 发送消息
 async function sendMessage() {
   const text = inputText.value.trim()
   if (!text || sending.value) return
@@ -161,7 +160,6 @@ async function sendMessage() {
     const res = await sendDirectMessageApi(myUserId.value, otherUserId.value, text)
     if (res.code === 0) {
       inputText.value = ''
-      // 乐观插入，立刻显示
       messages.value.push({
         messageId: Date.now(),
         senderId: myUserId.value,
@@ -179,7 +177,7 @@ async function sendMessage() {
   finally { sending.value = false }
 }
 
-// ── textarea 自适应高度 ──
+// textarea 自适应高度
 function autoResize() {
   const el = textareaRef.value
   if (!el) return
@@ -212,7 +210,7 @@ onUnmounted(() => {
 .blob1 { width: 400px; height: 400px; background: rgba(167,139,250,0.14); top: -100px; right: -80px; }
 .blob2 { width: 350px; height: 350px; background: rgba(196,181,253,0.1);  bottom: 0; left: -60px; }
 
-/* ── 顶部导航 ── */
+/* 顶部导航 */
 .nav {
   position: relative; z-index: 10;
   display: flex; align-items: center; justify-content: space-between;
@@ -238,7 +236,7 @@ onUnmounted(() => {
 .nav-name { font-size: 16px; font-weight: 800; color: #1a1028; }
 .nav-spacer { width: 72px; }
 
-/* ── 消息列表 ── */
+/* 消息列表 */
 .msg-list {
   flex: 1; overflow-y: auto; padding: 16px 16px 8px;
   display: flex; flex-direction: column; gap: 2px;
@@ -294,7 +292,7 @@ onUnmounted(() => {
   box-shadow: 0 2px 10px rgba(124,58,237,0.25);
 }
 
-/* ── 输入框 ── */
+/* 输入框 */
 .input-bar {
   flex-shrink: 0; position: relative; z-index: 10;
   display: flex; align-items: flex-end; gap: 10px;

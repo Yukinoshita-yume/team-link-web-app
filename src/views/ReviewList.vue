@@ -3,7 +3,6 @@
     <div class="blob blob1"></div>
     <div class="blob blob2"></div>
 
-    <!-- 顶部导航，风格与 PersonalPage 保持一致 -->
     <nav class="nav">
       <button class="btn-back" @click="goBack">
         <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"/></svg>
@@ -54,7 +53,6 @@
       <div class="empty-tip" v-else-if="filteredApplicants.length === 0">暂无报名记录</div>
 
       <!-- 申请人列表 -->
-      <!-- ✅ 复用 ApplicantCard 组件，点击打开 AIReviewDrawer -->
       <div class="applicant-grid" v-else>
         <ApplicantCard
           v-for="a in filteredApplicants"
@@ -67,7 +65,6 @@
       </div>
     </div>
 
-    <!-- ✅ 复用 AIReviewDrawer，传入当前选中申请人 -->
     <AIReviewDrawer
       v-if="maxParticipants>0"
       :visible="drawerVisible"
@@ -77,7 +74,6 @@
       @approve="handleApprove"
     />
 
-    <!-- 操作反馈 Toast，与 PersonalPage 风格一致 -->
     <transition name="toast">
       <div class="toast" v-if="toast.show">
         <span>{{ toast.icon }}</span> {{ toast.msg }}
@@ -95,7 +91,6 @@ import AIReviewDrawer from '@/components/review/AIReviewDrawer.vue'
 import { unadmittedMembersApi, aiReviewApplicationApi, approveApplicationApi, maxParticipantsApi } from '@/api/api'
 
 const route = useRoute()
-// ✅ 从路由参数获取竞赛 ID，每个竞赛审核页面独立
 const competitionId = computed(() => route.query.id)
 const competitionTitle = computed(() => route.query.title || '竞赛审核')
 
@@ -141,14 +136,12 @@ async function loadMaxParticipants() {
   }
 }
 
-// ✅ 加载当前竞赛的报名列表，与原 MessagePage2 的 unadmittedMembersApi 调用方式相同
 async function loadApplicants() {
   if (!competitionId.value) return
   loading.value = true
   try {
     const res = await unadmittedMembersApi({ competitionId: competitionId.value })
     if (res.code === 0 && res.data) {
-      // 将后端数据映射为 ApplicantCard 所需字段
       applicants.value = res.data.map(item => ({
         userId: item.userId,
         name: item.userName || '未知用户',
@@ -244,12 +237,10 @@ onMounted(() => {
 .blob { position: fixed; border-radius: 50%; filter: blur(80px); pointer-events: none; z-index: 0; }
 .blob1 { width: 500px; height: 500px; background: rgba(167,139,250,0.15); top: -120px; right: -80px; }
 
-/* 导航栏，与 PersonalPage 保持一致 */
 .nav { position: sticky; top: 0; z-index: 50; display: flex; align-items: center; justify-content: space-between; padding: 14px 24px; background: rgba(255,255,255,0.85); backdrop-filter: blur(16px); border-bottom: 1px solid rgba(0,0,0,0.05); }
 .nav-title { position: absolute; left: 50%; transform: translateX(-50%); font-size: 18px; font-weight: 800; color: #1a1028; white-space: nowrap; }
 .nav-spacer { width: 64px; }
 
-/* 返回按钮，风格与 .msg-btn 一致 */
 .btn-back { display: flex; align-items: center; gap: 5px; padding: 5px 12px; background: rgba(139,92,246,0.08); color: #7c3aed; border: 1px solid rgba(139,92,246,0.15); border-radius: 16px; font-size: 12px; font-weight: 600; cursor: pointer; transition: all 0.2s; }
 .btn-back:hover { background: rgba(139,92,246,0.14); }
 
@@ -264,7 +255,6 @@ onMounted(() => {
 .chip-approved .stat-num { color: #059669; }
 .chip-rejected .stat-num { color: #dc2626; }
 
-/* 筛选栏，风格参考 .msg-btn */
 .filter-row { display: flex; gap: 8px; flex-wrap: wrap; }
 .filter-btn { padding: 5px 14px; background: rgba(139,92,246,0.06); color: #888; border: 1px solid rgba(139,92,246,0.1); border-radius: 16px; font-size: 12px; font-weight: 600; cursor: pointer; transition: all 0.2s; }
 .filter-btn.active { background: rgba(139,92,246,0.12); color: #7c3aed; border-color: rgba(139,92,246,0.25); }
@@ -275,7 +265,6 @@ onMounted(() => {
 
 .empty-tip { text-align: center; padding: 40px; font-size: 14px; color: #ccc; }
 
-/* Toast，与 PersonalPage 完全一致 */
 .toast { position: fixed; bottom: 32px; left: 50%; transform: translateX(-50%); background: rgba(240,253,244,0.96); border: 1px solid rgba(52,211,153,0.3); border-radius: 14px; padding: 12px 20px; font-size: 14px; font-weight: 600; color: #065f46; display: flex; align-items: center; gap: 8px; box-shadow: 0 8px 32px rgba(0,0,0,0.1); z-index: 999; }
 .toast-enter-active, .toast-leave-active { transition: all 0.3s; }
 .toast-enter-from, .toast-leave-to { opacity: 0; transform: translateX(-50%) translateY(12px); }

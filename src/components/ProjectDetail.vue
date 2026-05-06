@@ -346,7 +346,7 @@ const handleDelete = async () => {
   if (ok) deleteCompetitioin()
 }
 
-// 4.6 跳转到队伍诊断报告页面
+// 跳转到队伍诊断报告页面
 const handleDiagnose = () => {
   router.push({ path: '/team-diagnose', query: { competitionId: competitionId.value } })
 }

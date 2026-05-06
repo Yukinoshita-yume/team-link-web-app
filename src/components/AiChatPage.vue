@@ -199,6 +199,9 @@ import { ref, computed, nextTick, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useStore } from 'vuex'
 import { aiChatApi } from '@/api/api'
+import MarkdownIt from 'markdown-it'
+
+const md = new MarkdownIt()
 
 const router = useRouter()
 const store = useStore()
@@ -350,71 +353,77 @@ const resetInputHeight = () => {
  * ★ Markdown 渲染（仅用于已完成的消息，流式阶段完全不调用）
  * 支持：# 标题、**粗体**、`代码`、有序/无序列表、段落
  */
-const renderMarkdown = (text) => {
-  if (!text) return ''
+// const renderMarkdown = (text) => {
+//   if (!text) return ''
+//   console.log('渲染 Markdown:', text)
+//   const escape = (s) => s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
 
-  const escape = (s) => s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+//   // 行内格式：粗体、行内代码
+//   const inline = (s) => escape(s)
+//       .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+//       .replace(/`([^`]+)`/g, '<code>$1</code>')
 
-  // 行内格式：粗体、行内代码
-  const inline = (s) => escape(s)
-      .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
-      .replace(/`([^`]+)`/g, '<code>$1</code>')
+//   const lines = text.split('\n')
+//   const out = []
+//   let inOl = false, inUl = false
 
-  const lines = text.split('\n')
-  const out = []
-  let inOl = false, inUl = false
+//   const closeList = () => {
+//     if (inOl) { out.push('</ol>'); inOl = false }
+//     if (inUl) { out.push('</ul>'); inUl = false }
+//   }
 
-  const closeList = () => {
-    if (inOl) { out.push('</ol>'); inOl = false }
-    if (inUl) { out.push('</ul>'); inUl = false }
-  }
+//   for (const raw of lines) {
+//     const line = raw.trim()
 
-  for (const raw of lines) {
-    const line = raw.trim()
+//     // 标题 # / ## / ###
+//     const hm = line.match(/^(#{1,3})\s+(.+)/)
+//     if (hm) {
+//       closeList()
+//       const lvl = hm[1].length
+//       const tag = ['h3','h4','h5'][lvl - 1]
+//       out.push(`<${tag} class="md-h md-h${lvl}">${inline(hm[2])}</${tag}>`)
+//       continue
+//     }
 
-    // 标题 # / ## / ###
-    const hm = line.match(/^(#{1,3})\s+(.+)/)
-    if (hm) {
-      closeList()
-      const lvl = hm[1].length
-      const tag = ['h3','h4','h5'][lvl - 1]
-      out.push(`<${tag} class="md-h md-h${lvl}">${inline(hm[2])}</${tag}>`)
-      continue
-    }
+//     // 有序列表 1. xxx
+//     const om = line.match(/^(\d+)\.\s+(.+)/)
+//     if (om) {
+//       if (!inOl) { closeList(); out.push('<ol class="md-ol">'); inOl = true }
+//       out.push(`<li>${inline(om[2])}</li>`)
+//       continue
+//     }
 
-    // 有序列表 1. xxx
-    const om = line.match(/^(\d+)\.\s+(.+)/)
-    if (om) {
-      if (!inOl) { closeList(); out.push('<ol class="md-ol">'); inOl = true }
-      out.push(`<li>${inline(om[2])}</li>`)
-      continue
-    }
+//     // 无序列表 - xxx 或 * xxx
+//     const um = line.match(/^[-*]\s+(.+)/)
+//     if (um) {
+//       if (!inUl) { closeList(); out.push('<ul class="md-ul">'); inUl = true }
+//       out.push(`<li>${inline(um[1])}</li>`)
+//       continue
+//     }
 
-    // 无序列表 - xxx 或 * xxx
-    const um = line.match(/^[-*]\s+(.+)/)
-    if (um) {
-      if (!inUl) { closeList(); out.push('<ul class="md-ul">'); inUl = true }
-      out.push(`<li>${inline(um[1])}</li>`)
-      continue
-    }
+//     // 空行
+//     if (!line) {
+//       closeList()
+//       if (out.length && out[out.length - 1] !== '<div class="md-gap"></div>') {
+//         out.push('<div class="md-gap"></div>')
+//       }
+//       continue
+//     }
 
-    // 空行
-    if (!line) {
-      closeList()
-      if (out.length && out[out.length - 1] !== '<div class="md-gap"></div>') {
-        out.push('<div class="md-gap"></div>')
-      }
-      continue
-    }
+//     // 普通段落
+//     closeList()
+//     out.push(`<p class="md-p">${inline(line)}</p>`)
+//   }
 
-    // 普通段落
-    closeList()
-    out.push(`<p class="md-p">${inline(line)}</p>`)
-  }
-
-  closeList()
-  return out.join('')
+//   closeList()
+//   return out.join('')
+// }
+const preprocess = (text) => {
+  return text
+    .replace(/<br\s*\/?>/gi, '  \n')
+    .replace(/\n{3,}/g, '\n\n')
 }
+const renderMarkdown = (text) => md.render(preprocess(text))
 
 onMounted(() => {
   inputRef.value?.focus()
